@@ -48,9 +48,13 @@ ordersCltr.create = async (req, res)=>{
 
 ordersCltr.list = async (req, res)=>{
     try{
-        const order = await Order.find()
+        const order = await Order.find().populate({
+            path: 'packages.packageId'
+        })
+        
         res.json(order)
     }catch(e){
+        console.log(e)
         res.status(500).json(e)
     }
 }
