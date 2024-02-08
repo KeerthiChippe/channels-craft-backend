@@ -25,7 +25,6 @@ packagesCltr.create = async (req, res)=>{
             await package.save()
             res.status(201).json(package)
         }catch(e){
-            console.log(e)
             res.status(500).json(e)
         }
     

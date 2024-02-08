@@ -39,7 +39,6 @@ usersCltr.register = async (req, res) => {
         await user.save()
         return res.status(201).json(user)
     } catch (e) {
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -68,8 +67,6 @@ usersCltr.login = async (req, res) => {
                 role: user.role,
                 operator: operator._id
             }
-            console.log(tokenData)
-
             const token = jwt.sign(tokenData, process.env.JWT_SECRET, { expiresIn: '14d' })
             res.json({ token: token })
             
@@ -78,7 +75,6 @@ usersCltr.login = async (req, res) => {
                 id: user._id,
                 role: user.role
             }
-            console.log(tokenData)
             const token = jwt.sign(tokenData, process.env.JWT_SECRET, { expiresIn: '14d' })
             res.json({ token: token })
         }
@@ -110,7 +106,6 @@ usersCltr.createUser = async (req, res) => {
             return res.status(201).json(user)
         }
     } catch (e) {
-        console.log(e.message)
         res.status(500).json(e)
     }
 }
@@ -152,7 +147,6 @@ usersCltr.forgotPassword = async (req, res) => {
             }
         });
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -170,7 +164,6 @@ usersCltr.resetPassword = async(req, res)=>{
                 }        
                 res.send({Status: 'Success'})
             }catch(e){
-                console.log(e)
                 return res.status(500).json(e)
             }
 }
@@ -199,7 +192,6 @@ usersCltr.createUser = async(req, res) =>{
         return res.status(201).json(user)
 
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }

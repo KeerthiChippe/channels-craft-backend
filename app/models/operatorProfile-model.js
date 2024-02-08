@@ -10,6 +10,7 @@ const operatorProfileSchema = new Schema({
     mobile: String,
     state: String,
     city: String,
+    image:String,
 }, {timestamps: true})
 
 const OperatorProfile = model('OperatorProfile', operatorProfileSchema)
