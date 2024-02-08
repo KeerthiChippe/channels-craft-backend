@@ -45,7 +45,7 @@ paymentsCltr.create = async (req, res)=>{
             cancel_url : `http://localhost:3000/failure`,
             customer : customer.id
         })
-        // console.log(session, "7777")
+
         const payment = new Payment(body)
         const customerProfile = await CustomerProfile.findOne({'userId': req.user.id})
     
@@ -60,7 +60,6 @@ paymentsCltr.create = async (req, res)=>{
         res.json({"id": session.id, "url": session.url})
 
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }

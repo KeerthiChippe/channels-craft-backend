@@ -18,8 +18,6 @@ customerCltr.create = async ( req,res ) =>{
     try{
         const customer = new CustomerProfile(body)
         customer.operatorId = req.user.operator
-        // console.log(req.user)
-        // console.log(req.user.operator)
         await customer.save()
 
         // Fetching user details to get the email
@@ -57,7 +55,6 @@ customerCltr.create = async ( req,res ) =>{
         res.status(201).json(customer)
        
     }catch(err){
-        console.log(err)
         res.status(500).json(err)
     }
 }
@@ -68,7 +65,6 @@ customerCltr.listAllCustomers = async (req,res) =>{
         const customer = await CustomerProfile.find()
         res.json(customer)
     }catch(err){
-        console.log(err)
         res.status(400).json(err)
     }
 }
@@ -95,7 +91,6 @@ customerCltr.updateCustomer = async (req, res) => {
     const id = req.params.customerId;
     const body = _.pick(req.body, ['mobile']);
     try {
-        console.log(id, "123")
         // if(req.user.role === 'operator'){
         //     const updatedOperator = await OperatorProfile.findOneAndUpdate(
         //         { _id: id},
@@ -120,7 +115,6 @@ customerCltr.updateCustomer = async (req, res) => {
         
         res.status(200).json(user)
     } catch (e) {
-        console.log(e);
         res.status(500).json(e);
     }
 };
@@ -128,13 +122,11 @@ customerCltr.updateCustomer = async (req, res) => {
 //to delete customer
 customerCltr.deleteCustomer = async (req,res) =>{
     const id = req.params.id
-    console.log(id, "check", req.user.id,req.user.operator, req.user.role)
     try{
         let customer
         if(req.user.role == 'operator'){
             customer = await CustomerProfile.findOne({_id: id, operatorId: req.user.operator})
         }
-        console.log(customer, "fff")
 
         if(!customer){
             return res.status(401).json({errors: 'record not found'})
@@ -142,7 +134,6 @@ customerCltr.deleteCustomer = async (req,res) =>{
 
         res.status(201).json(customer)
     }catch(err){
-        console.log(err)
         res.status(400).json(err)
     }
 }
@@ -162,7 +153,7 @@ customerCltr.assignPackage = async (req, res) => {
   
       // Check if package already exists for the customer
       const existingPackage = customer.currentPackages.find(p => p.packageId === packageId);
-    //   console.log(existingPackage)
+
       if (existingPackage) {
         return res.status(400).json({ errors: 'Package already assigned to customer' });
       }
@@ -212,15 +203,29 @@ customerCltr.assignChannel = async (req, res)=>{
     }
 }
 
+customerCltr.profile = async(req , res) =>{
+    const id = req.params.customerId
+    try{
+        const updatedCustomer = await CustomerProfile.findOneAndUpdate(
+            {_id:id} , {image : req.file.filename} ,{ new:true }
+        )
+        res.status(200).json(updatedCustomer)
+    }catch(err){
+        res.status(500).json(err)
+    }
+}
+
+
 customerCltr.getProfile = async (req, res)=>{
     const userId = req.user.id
     try{
         const customer = await CustomerProfile.findOne({userId})
         customer.userId = req.user.id
-        // console.log(customer)
+
         res.json(customer)
+    
     }catch(e){
-        // console.log(e)
+
         res.status(500).json(e)
     }
 }

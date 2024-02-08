@@ -17,8 +17,6 @@ ordersCltr.create = async (req, res)=>{
 
         const packagePrice = packages.reduce((sum, package) => sum + package.packagePrice, 0)
         const channelPrice = channels.reduce((sum, channel) => sum + channel.channelPrice, 0)
-        console.log(packagePrice, typeof packagePrice, "hhhh")
-        console.log(channelPrice, typeof channelPrice, "kkkk")
         const totalPrice = Number(packagePrice) + Number(channelPrice)
         
         const order = new Order(body) 
@@ -37,14 +35,12 @@ ordersCltr.create = async (req, res)=>{
             order.customerId = user.id
             order.operatorId = user.operatorId
         }
-        // console.log(user, req.user.id , "33")
         await order.save()
         await CustomerProfile.findOneAndUpdate(
             {_id: order.customerId}, {$push: {currentPackages: order.packages, currentChannels: order.channels}}, {new: true}
         )
         res.status(201).json(order)
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -63,7 +59,6 @@ ordersCltr.list = async (req, res)=>{
         console.log(order, 'orderid')
         res.json({_id: order._id, packages: order.packages, channels: order.channels})
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }

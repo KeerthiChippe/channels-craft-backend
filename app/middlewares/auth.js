@@ -20,9 +20,8 @@ const authenticateUser = async (req, res, next)=>{
         if(!user.isActive){
             return res.json({notice: "Your account is deactivated, contact the admin of the site."})
         }
-        // console.log(tokenData, "token1")
+
         if(tokenData.operator){
-            // console.log(tokenData.operator, "token2")
             req.user = {id: tokenData.id, role: tokenData.role, operator: tokenData.operator}
         }else{
             req.user = {id: tokenData.id, role: tokenData.role}
