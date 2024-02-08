@@ -26,14 +26,22 @@ const storage = multer.diskStorage({
 const upload = multer ({storage})
 
 //upload images
-app.post('/api/upload', upload.single('file'), (req, res) =>{
-    console.log(req.body)
-    console.log(req.file)
-    CustomerProfile.create({image:req.file.filename})
-    .then(result => res.json(result))
-    .catch(err => console.log(err))
+// app.post('/api/upload', upload.single('file'), (req, res) =>{
+//     console.log(req.body)
+//     console.log(req.file)
+//     CustomerProfile.create({image:req.file.filename})
+//     .then(result => res.json(result))
+//     .catch(err => console.log(err))
 
-}) 
+// }) 
+// app.post('/api/upload/operator', upload.single('file'), (req, res) =>{
+//     console.log(req.body)
+//     console.log(req.file)
+//     OperatorProfile.create({image:req.file.filename})
+//     .then(result => res.json(result))
+//     .catch(err => console.log(err))
+
+// }) 
 
 // app.post('/api/upload-package', upload.single('file'), (req, res) =>{
 //     console.log(req.body)
@@ -44,11 +52,11 @@ app.post('/api/upload', upload.single('file'), (req, res) =>{
 
 // }) 
 
-app.get('/api/getimage' , (req,res) =>{
-    CustomerProfile.find()
-    .then( customer => res.json(customer) )
-    .catch(err => console.log(err))
-})
+// app.get('/api/getimage' , (req,res) =>{
+//     CustomerProfile.find()
+//     .then( customer => res.json(customer) )
+//     .catch(err => console.log(err))
+// })
 
 // app.get('/api/getimage/:filename', (req, res) => {
 //     const fileName = req.params.filename;
@@ -108,13 +116,15 @@ app.post('/api/operator', authenticateUser, authorizeUser(['admin']), checkSchem
 app.get('/api/listAllOperators', authenticateUser, authorizeUser(['admin','operator']), operatorsCltr.listAllOperators)
 app.get('/api/listSingleOperator/:operatorId', authenticateUser, authorizeUser(['admin']), operatorsCltr.listSingleOperator)
 app.put('/api/operator/:operatorId', authenticateUser, authorizeUser(['operator', 'admin']), checkSchema(operatorUpdateSchema), operatorsCltr.updateOperator)
+app.put('/api/operator/:operatorId/profile', authenticateUser, authorizeUser(['operator']), upload.single('file'), operatorsCltr.profile)
 app.delete('/api/operator/:operatorId', authenticateUser, authorizeUser(['admin']), operatorsCltr.deleteOperator)
 app.get('/api/operator/profile', authenticateUser, authorizeUser(['operator']), operatorsCltr.getProfile)
+
 //packages api's
 app.post('/api/packages', authenticateUser, authorizeUser(['admin']), upload.single('file'), checkSchema(packageSchema), packagesCltr.create)
 app.get('/api/listAllPackages', packagesCltr.listAllPackages)
 app.get('/api/listOnePackage/:packageId', packagesCltr.listSinglePAckage)
-app.put('/api/packages/:packageId', authenticateUser, authorizeUser(['admin']), checkSchema(packageUpdateSchema), packagesCltr.updatePackage)
+app.put('/api/packages/:packageId', authenticateUser, authorizeUser(['admin']),upload.single('file'), checkSchema(packageUpdateSchema), packagesCltr.updatePackage)
 app.delete('/api/packages', authenticateUser, authorizeUser(['admin']), packagesCltr.deletePackage)
 app.get('/api/listAllDeletedPackages', authenticateUser, authorizeUser(['admin']), packagesCltr.listAllDeletedPackages)
 
@@ -131,6 +141,7 @@ app.post('/api/customers',authenticateUser, authorizeUser(['operator']), checkSc
 app.get('/api/listAllCustomers',authenticateUser,authorizeUser(['operator']),customerCltr.listAllCustomers)
 app.get('/api/singleCustomer/:id',authenticateUser,authorizeUser(['operator']),customerCltr.singleCustomer)
 app.put('/api/customer/:customerId', authenticateUser, authorizeUser(['customer','operator']), checkSchema(customerUpdateSchema), customerCltr.updateCustomer)
+app.put('/api/customer/:customerId/profile', authenticateUser, authorizeUser(['customer']), upload.single('file'), customerCltr.profile)
 app.delete('/api/customer/:id',authenticateUser,authorizeUser(['operator']),customerCltr.deleteCustomer)
 app.post('/api/customers/:customerId/packages', checkSchema(customerSchema),customerCltr.assignPackage)
 app.post('/api/customers/:customerId/channels', checkSchema(customerSchema), customerCltr.assignChannel)
