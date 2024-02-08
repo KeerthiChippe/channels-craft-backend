@@ -16,6 +16,11 @@ const paymentSchema = new Schema({
         ref:"order"
     },
     amount: Number,
+    status: {
+        type: String,
+        enum: ['pending', 'success', 'failure'],
+        default: 'pending'
+    },
     paymentDate: Date,
     transactionId:String
 }, {timestamps: true})
