@@ -137,8 +137,8 @@ usersCltr.forgotPassword = async (req, res) => {
             res.status(200).json({token : token})
 
         var mailOptions = {
-            from:`${user.email}`,
-            to: 'chippekeerthi@gmail.com',
+            from: 'chippekeerthi@gmail.com',
+            to: `${user.email}`,
             subject: 'Reset your password',
             text: `<a href=http://localhost:3000/reset-password/${user._id}/${token}> Click here to reset your password</a>`
         };

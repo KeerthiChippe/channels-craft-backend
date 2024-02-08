@@ -1,5 +1,6 @@
 const { validationResult } = require ('express-validator') 
 const _ = require('lodash')
+var nodemailer = require('nodemailer');
 
 const CustomerProfile = require('../models/customerProfile-model')
 const User =  require('../models/user-model')
@@ -17,9 +18,42 @@ customerCltr.create = async ( req,res ) =>{
     try{
         const customer = new CustomerProfile(body)
         customer.operatorId = req.user.operator
-        console.log(req.user)
-        console.log(req.user.operator)
+        // console.log(req.user)
+        // console.log(req.user.operator)
         await customer.save()
+
+        // Fetching user details to get the email
+        const user = await User.findById(body.userId)
+
+        var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'chippekeerthi@gmail.com',
+                pass: 'nyey oyoc omdm vobw'
+            }
+        });
+        var mailOptions = {
+            from: `chippekeerthi@gmail.com`,
+            to: `${user.email}`,
+            subject: 'Operator Account Created',
+            html:
+                `<h2>Your Account has been created successfully</h2>
+                <p>Dear ${user.username},</p>
+                <p>Here are your credentials:</p>
+                <p>Mobile: ${body.mobile}</p>
+                <p>Password: secret123 (as per your system's policy)</p>
+                <p>Please keep your credentials safe.</p>
+                <p>Thank you.</p>`
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+                return res.send({ Status: "success" })
+            }
+        });
         res.status(201).json(customer)
        
     }catch(err){
@@ -94,13 +128,13 @@ customerCltr.updateCustomer = async (req, res) => {
 //to delete customer
 customerCltr.deleteCustomer = async (req,res) =>{
     const id = req.params.id
-    console.log(id, "check", req.user.id, req.user.role)
+    console.log(id, "check", req.user.id,req.user.operator, req.user.role)
     try{
         let customer
         if(req.user.role == 'operator'){
             customer = await CustomerProfile.findOne({_id: id, operatorId: req.user.operator})
         }
-        console.log(customer)
+        console.log(customer, "fff")
 
         if(!customer){
             return res.status(401).json({errors: 'record not found'})
@@ -128,7 +162,7 @@ customerCltr.assignPackage = async (req, res) => {
   
       // Check if package already exists for the customer
       const existingPackage = customer.currentPackages.find(p => p.packageId === packageId);
-      console.log(existingPackage)
+    //   console.log(existingPackage)
       if (existingPackage) {
         return res.status(400).json({ errors: 'Package already assigned to customer' });
       }
@@ -183,10 +217,10 @@ customerCltr.getProfile = async (req, res)=>{
     try{
         const customer = await CustomerProfile.findOne({userId})
         customer.userId = req.user.id
-        console.log(customer)
+        // console.log(customer)
         res.json(customer)
     }catch(e){
-        console.log(e)
+        // console.log(e)
         res.status(500).json(e)
     }
 }

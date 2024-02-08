@@ -31,7 +31,7 @@ channelsCltr.create = async(req,res) =>{
             await channel.save()
             res.status(201).json(channel)
         }catch(err){
-            console.log(err)
+            // console.log(err)
             res.status(500).json(err)
         }
     }
@@ -43,7 +43,7 @@ channelsCltr.listAllChannels = async (req,res) => {
         const channel = await Channel.find()
         res.json(channel)
     }catch(err){
-        console.log(err)
+        // console.log(err)
         res.status(400).json(err)
     }
 }
@@ -83,7 +83,7 @@ channelsCltr.updateChannel = async (req,res) =>{
         const package = await Package.findByIdAndUpdate()
         res.status(200).json(channel)
     }catch(err){
-        console.log(err)
+        // console.log(err)
         res.status(400).json(err)
     }
 }
@@ -96,7 +96,7 @@ channelsCltr.deleteChannel = async (req, res) =>{
         const channel= await Channel.findByIdAndDelete(id)
         res.status(200).json(channel)
     }catch(err){
-        console.log(err)
+        // console.log(err)
         res.status(400).json(err)
     }
 }

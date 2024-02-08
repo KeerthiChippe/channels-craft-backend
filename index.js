@@ -135,11 +135,15 @@ app.delete('/api/customer/:id',authenticateUser,authorizeUser(['operator']),cust
 app.post('/api/customers/:customerId/packages', checkSchema(customerSchema),customerCltr.assignPackage)
 app.post('/api/customers/:customerId/channels', checkSchema(customerSchema), customerCltr.assignChannel)
 app.get('/api/customer/profile', authenticateUser, authorizeUser(['customer']), customerCltr.getProfile)
+
 //orders api
 app.post('/api/orders', authenticateUser, authorizeUser(['operator', 'customer']), checkSchema(orderSchema), ordersCltr.create)
-app.get('/api/orders', authenticateUser, authorizeUser(['admin']), ordersCltr.list)
+app.get('/api/orders', authenticateUser, authorizeUser(['customer']), ordersCltr.list)
 
-app.post('/api/payment', paymentsCltr.create)
+//payments api
+app.post('/api/payment', authenticateUser, authorizeUser(['customer']), paymentsCltr.create)
+app.put('/api/payment/:id', authenticateUser, authorizeUser(['customer']), paymentsCltr.update)
+app.delete('/api/payment/:id', authenticateUser, authorizeUser(['customer']), paymentsCltr.delete)
 
 app.listen(PORT, ()=>{
     console.log('server running on port', PORT)

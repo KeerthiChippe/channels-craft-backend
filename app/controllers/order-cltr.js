@@ -39,6 +39,9 @@ ordersCltr.create = async (req, res)=>{
         }
         // console.log(user, req.user.id , "33")
         await order.save()
+        await CustomerProfile.findOneAndUpdate(
+            {_id: order.customerId}, {$push: {currentPackages: order.packages, currentChannels: order.channels}}, {new: true}
+        )
         res.status(201).json(order)
     }catch(e){
         console.log(e)
@@ -48,11 +51,17 @@ ordersCltr.create = async (req, res)=>{
 
 ordersCltr.list = async (req, res)=>{
     try{
-        const order = await Order.find().populate({
-            path: 'packages.packageId'
+        const customerProfile = await CustomerProfile.findOne({'userId': req.user.id})
+        console.log(customerProfile.id, "userid")
+        const order = await Order.findOne({'customerId': customerProfile.id, status: 'success'}).populate({
+            path: 'packages.packageId',
+            select: 'packageName'
+        }).populate({
+            path: 'channels.channelId',
+            select: 'channelName'
         })
-        
-        res.json(order)
+        console.log(order, 'orderid')
+        res.json({_id: order._id, packages: order.packages, channels: order.channels})
     }catch(e){
         console.log(e)
         res.status(500).json(e)
