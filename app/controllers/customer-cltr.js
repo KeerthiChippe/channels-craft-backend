@@ -1,6 +1,6 @@
 const { validationResult } = require ('express-validator') 
 const _ = require('lodash')
-var nodemailer = require('nodemailer');
+var nodemailer = require('nodemailer')
 
 const CustomerProfile = require('../models/customerProfile-model')
 const User =  require('../models/user-model')
@@ -80,8 +80,7 @@ customerCltr.singleCustomer = async (req,res) =>{
     }
 }
 
-
-// //to update customer
+ //to update customer
 customerCltr.updateCustomer = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -221,7 +220,7 @@ customerCltr.getProfile = async (req, res)=>{
     try{
         const customer = await CustomerProfile.findOne({userId})
         customer.userId = req.user.id
-
+        console.log(customer, "cus")
         res.json(customer)
     
     }catch(e){

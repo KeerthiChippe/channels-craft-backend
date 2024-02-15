@@ -68,7 +68,7 @@ paymentsCltr.update = async (req, res)=>{
     const id = req.params.id
     try{
         const payment = await Payment.findOneAndUpdate({"transactionId": id}, {'status': 'success'}, {new: true})
-        const order = await Order.findOneAndUpdate({'customerId': payment.customerId}, {status: 'success'}, {new: true})
+        const order = await Order.findOneAndUpdate({'customerId': payment.customerId}, {status: 'success', orderDate: new Date()}, {new: true})
         res.json(payment)
     }catch(e){
         console.log(e)
