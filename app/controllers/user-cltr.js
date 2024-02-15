@@ -130,6 +130,16 @@ usersCltr.login = async (req, res) => {
 //         res.status(500).json(e)
 //     }
 // }
+//         if (req.user.role == 'operator') {
+//             user.password = encryptedPassword
+//             user.operatorId = req.user.operator
+//             await user.save()
+//             return res.status(201).json(user)
+//         }
+//     } catch (e) {
+//         res.status(500).json(e)
+//     }
+// }
 
 usersCltr.forgotPassword = async (req, res) => {
     const body = _.pick(req.body, ['email'])
