@@ -1,5 +1,6 @@
 const {validationResult} = require('express-validator')
 const _ = require('lodash')
+const { startOfMonth, endOfMonth } = require('date-fns')
 
 const Order = require('../models/order-model')
 const CustomerProfile = require('../models/customerProfile-model')
@@ -17,8 +18,8 @@ ordersCltr.create = async (req, res)=>{
 
         const packagePrice = packages.reduce((sum, package) => sum + package.packagePrice, 0)
         const channelPrice = channels.reduce((sum, channel) => sum + channel.channelPrice, 0)
-        console.log(packagePrice, typeof packagePrice, "hhhh")
-        console.log(channelPrice, typeof channelPrice, "kkkk")
+        // console.log(packagePrice, typeof packagePrice, "hhhh")
+        // console.log(channelPrice, typeof channelPrice, "kkkk")
         const totalPrice = Number(packagePrice) + Number(channelPrice)
         
         const order = new Order(body) 
@@ -30,7 +31,7 @@ ordersCltr.create = async (req, res)=>{
         if (customerProfile) {
             order.customerId = customerProfile.id;
         }
-    }
+        }
         if(req.user.role === 'customer'){
             // order.customerId = req.user.id
             const user = await CustomerProfile.findOne({'userId': req.user.id})
@@ -52,20 +53,48 @@ ordersCltr.create = async (req, res)=>{
 ordersCltr.list = async (req, res)=>{
     try{
         const customerProfile = await CustomerProfile.findOne({'userId': req.user.id})
-        console.log(customerProfile.id, "userid")
-        const order = await Order.findOne({'customerId': customerProfile.id, status: 'success'}).populate({
+        // console.log(customerProfile.id, "userid")
+        const order = await Order.find({'customerId': customerProfile.id, status: 'success'}).populate({
             path: 'packages.packageId',
             select: 'packageName'
         }).populate({
             path: 'channels.channelId',
             select: 'channelName'
+        }).populate({
+            path: 'orderDate'
         })
-        console.log(order, 'orderid')
-        res.json({_id: order._id, packages: order.packages, channels: order.channels})
+        res.json(order)
     }catch(e){
         console.log(e)
         res.status(500).json(e)
     }
 }
+
+ordersCltr.listAllOrders = async (req, res)=>{
+    try{
+        const order = await Order.find({status: 'success'}).populate({
+            path: 'customerId',
+            select: 'customerName'
+        }).populate({
+            path: 'operatorId',
+            select: 'operatorName'
+        }).populate({
+            path: 'packages.packageId',
+            select: 'packageName'
+        }).populate({
+            path: 'channels.channelId',
+            select: 'channelName'
+        }).populate({
+            path: 'orderDate'
+        })
+        res.status(200).json(order)
+    }catch(e){
+        console.log(e)
+        res.status(500).json(e)
+    }
+}
+
+
+
 
 module.exports = ordersCltr

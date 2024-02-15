@@ -132,7 +132,8 @@ operatorsCltr.deleteOperator = async (req, res) => {
     const id = req.params.operatorId
     try {
         const operator = await OperatorProfile.findByIdAndDelete(id)
-        res.status(200).json(operator)
+        const user = await User.findOneAndDelete({'_id': operator.userId})
+        res.status(200).json(user)
     } catch (e) {
         res.status(500).json(e)
     }

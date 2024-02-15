@@ -86,22 +86,19 @@ const { orderSchema } = require('./app/validators/order-validations')
 const ordersCltr = require('./app/controllers/order-cltr')
 // const CustomerProfile = require('./app/models/customerProfile-model')
 const paymentsCltr = require('./app/controllers/payment-cltr')
-
+const dashboardCltrs = require('./app/controllers/dashboard-cltr')
 
 //users Api's
-
 app.post('/api/users/register',authenticateUser, authorizeUser(['admin', 'operator']), checkSchema(registerSchema), usersCltr.register)
 app.post('/api/users/login', checkSchema(loginSchema), usersCltr.login)
-app.post('/api/users/registerCustomer', authenticateUser, authorizeUser(['operator']), checkSchema(registerSchema), usersCltr.createUser)
 app.post('/api/forgot-password', usersCltr.forgotPassword)
 app.post('/api/reset-password/:id/:token', usersCltr.resetPassword)
-app.post('/api/users/registeruser', authenticateUser, authorizeUser(['admin','operator']), checkSchema(registerSchema), usersCltr.createUser)
+// app.post('/api/users/registeruser', authenticateUser, authorizeUser(['admin','operator']), checkSchema(registerSchema), usersCltr.createUser)
 app.get('/api/users/profile', authenticateUser, usersCltr.profile)
 app.put('/api/users/:id',authenticateUser, usersCltr.updateUser)
 app.delete('/api/users/:id', authenticateUser, usersCltr.deleteUser)
-app.get('/api/listAllUsers', authenticateUser, authorizeUser(['admin', "operator"]), usersCltr.listAllUsers)
+app.get('/api/listAllUsers', authenticateUser, authorizeUser(['admin', 'operator']), usersCltr.listAllUsers)
 app.get('/api/listSingleUser/:id', authenticateUser, authorizeUser(['admin']), usersCltr.listSingleUser)
-
 
 //operators api
 app.post('/api/operator', authenticateUser, authorizeUser(['admin']), checkSchema(operatorSchema), operatorsCltr.create)
@@ -110,6 +107,7 @@ app.get('/api/listSingleOperator/:operatorId', authenticateUser, authorizeUser([
 app.put('/api/operator/:operatorId', authenticateUser, authorizeUser(['operator', 'admin']), checkSchema(operatorUpdateSchema), operatorsCltr.updateOperator)
 app.delete('/api/operator/:operatorId', authenticateUser, authorizeUser(['admin']), operatorsCltr.deleteOperator)
 app.get('/api/operator/profile', authenticateUser, authorizeUser(['operator']), operatorsCltr.getProfile)
+
 //packages api's
 app.post('/api/packages', authenticateUser, authorizeUser(['admin']), upload.single('file'), checkSchema(packageSchema), packagesCltr.create)
 app.get('/api/listAllPackages', packagesCltr.listAllPackages)
@@ -125,25 +123,33 @@ app.get('/api/listOneChannel/:id',checkSchema(channelsSchema),channelsCltr.listO
 app.put('/api/updateChannel/:id', authenticateUser, authorizeUser(['admin']),checkSchema(channelUpdateSchema),channelsCltr.updateChannel)
 app.delete('/api/deleteChannel/:id', authenticateUser, authorizeUser(['admin']),channelsCltr.deleteChannel)
 
-
 //customers api
 app.post('/api/customers',authenticateUser, authorizeUser(['operator']), checkSchema(customerSchema),customerCltr.create)
 app.get('/api/listAllCustomers',authenticateUser,authorizeUser(['operator']),customerCltr.listAllCustomers)
 app.get('/api/singleCustomer/:id',authenticateUser,authorizeUser(['operator']),customerCltr.singleCustomer)
 app.put('/api/customer/:customerId', authenticateUser, authorizeUser(['customer','operator']), checkSchema(customerUpdateSchema), customerCltr.updateCustomer)
 app.delete('/api/customer/:id',authenticateUser,authorizeUser(['operator']),customerCltr.deleteCustomer)
-app.post('/api/customers/:customerId/packages', checkSchema(customerSchema),customerCltr.assignPackage)
-app.post('/api/customers/:customerId/channels', checkSchema(customerSchema), customerCltr.assignChannel)
 app.get('/api/customer/profile', authenticateUser, authorizeUser(['customer']), customerCltr.getProfile)
 
 //orders api
 app.post('/api/orders', authenticateUser, authorizeUser(['operator', 'customer']), checkSchema(orderSchema), ordersCltr.create)
 app.get('/api/orders', authenticateUser, authorizeUser(['customer']), ordersCltr.list)
+app.get('/api/allorders', authenticateUser, authorizeUser(['admin']), ordersCltr.listAllOrders)
+
+// app.get('/api/orders/:operatorId', authenticateUser, authorizeUser(['operator']), ordersCltr.fetchOrdersWithCustomerDetails)
 
 //payments api
+app.get('/api/payment/subscribers', authenticateUser, authorizeUser(['operator']), paymentsCltr.listSubscribers)
 app.post('/api/payment', authenticateUser, authorizeUser(['customer']), paymentsCltr.create)
+
 app.put('/api/payment/:id', authenticateUser, authorizeUser(['customer']), paymentsCltr.update)
+// app.post('/api/orders/:id/activate', authenticateUser, authorizeUser(['operator']), ordersCltr.activateSubscription)
+app.put('/api/payment/:id/activate', authenticateUser, authorizeUser(['operator']), paymentsCltr.activateSubscription)
 app.delete('/api/payment/:id', authenticateUser, authorizeUser(['customer']), paymentsCltr.delete)
+//dashboard api
+app.get('/api/operator-customers', authenticateUser, authorizeUser(['admin']), dashboardCltrs.getAllUsers)
+app.get('/api/trendingPackages', dashboardCltrs.trendingPackages)
+
 
 app.listen(PORT, ()=>{
     console.log('server running on port', PORT)

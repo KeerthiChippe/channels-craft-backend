@@ -3,6 +3,7 @@ const {validationResult} = require('express-validator')
 
 const Package = require('../models/package-model')
 const Channel = require('../models/channel-model')
+const CustomerProfile = require('../models/customerProfile-model')
 
 const packagesCltr = {}
 
@@ -27,8 +28,7 @@ packagesCltr.create = async (req, res)=>{
         }catch(e){
             console.log(e)
             res.status(500).json(e)
-        }
-    
+        }    
 }
 
 packagesCltr.listAllPackages = async (req, res)=>{
@@ -68,6 +68,10 @@ packagesCltr.updatePackage = async (req, res) =>{
 packagesCltr.deletePackage = async (req, res) =>{
     const {id, type} = req.query
     try{
+        const customers = await CustomerProfile.find({"currentPackages.packageId": id });
+        if (customers.length > 0) {
+            return res.status(403).json({ message: "Cannot delete package as it is subscribed by customers" });
+        }
         let package
         if(type === 'delete'){
             package = await Package.findByIdAndUpdate(id, {isDeleted: true}, {new: true})
@@ -92,5 +96,6 @@ packagesCltr.listAllDeletedPackages = async (req, res) =>{
         res.status(400).json(e)
     }
 }
+
 
 module.exports = packagesCltr
