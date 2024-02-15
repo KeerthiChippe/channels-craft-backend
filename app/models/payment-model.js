@@ -5,15 +5,15 @@ const paymentSchema = new Schema({
     paymentType: String,
     customerId :{
         type:Schema.Types.ObjectId,
-        ref:"customerProfile"
+        ref:"CustomerProfile"
     },
     operatorId :{
         type:Schema.Types.ObjectId,
-        ref:"operator"
+        ref:"OperatorProfile"
     },
     orderId:{
         type:Schema.Types.ObjectId,
-        ref:"order"
+        ref:"Order"
     },
     amount: Number,
     status: {
@@ -22,7 +22,11 @@ const paymentSchema = new Schema({
         default: 'pending'
     },
     paymentDate: Date,
-    transactionId:String
+    transactionId:String,
+    activate: {
+        type: Boolean,
+        default: false
+    }
 }, {timestamps: true})
 
 const Payment = model("Payment", paymentSchema)

@@ -4,8 +4,17 @@ const stripe = require('stripe')('sk_test_51OfgFJSAiFzFtt60BGeWYXj6pX9baqgU9TKnc
 const _ = require('lodash')
 const CustomerProfile = require('../models/customerProfile-model')
 const Order = require('../models/order-model')
+const User = require('../models/user-model')
+const nodemailer = require('nodemailer')
 
 const paymentsCltr = {}
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'chippekeerthi@gmail.com',
+        pass: 'nyey oyoc omdm vobw'
+    }
+});
 
 paymentsCltr.create = async (req, res)=>{
     const errors = validationResult(req)
@@ -68,10 +77,95 @@ paymentsCltr.update = async (req, res)=>{
     const id = req.params.id
     try{
         const payment = await Payment.findOneAndUpdate({"transactionId": id}, {'status': 'success'}, {new: true})
-        const order = await Order.findOneAndUpdate({'customerId': payment.customerId}, {status: 'success', orderDate: new Date()}, {new: true})
+        const order = await Order.findOneAndUpdate({'customerId': payment.customerId, "_id": payment.orderId}, {status: 'success', orderDate: new Date()}, {new: true})
+
+        await sendEmailNotification(payment, 'update')
+
         res.json(payment)
     }catch(e){
         console.log(e)
+    }
+}
+
+paymentsCltr.listSubscribers = async (req, res)=>{
+    try{
+        // const subscribers = await Payment.find({status: 'success', activate: false})
+        const subscribers = await Payment.find({status: 'success', activate: false}).populate({
+            path: 'customerId', 
+            select: 'customerName'
+        }).populate({
+            path: 'orderId',
+            select: 'packages.packageId'
+        })
+        // console.log(subscribers, 'subscribe')
+        res.json(subscribers)
+    }catch(e){
+        console.log(e)
+        res.json(e)
+    }
+}
+
+paymentsCltr.activateSubscription = async (req, res)=>{
+    const paymentId = req.params.id
+    try{
+        const payment = await Payment.findByIdAndUpdate({_id: paymentId}, {activate: true}, {new: true})
+        
+        await sendEmailNotification(payment, 'activate')
+        res.status(200).json(payment)
+    }catch(e){
+        console.log(e)
+        res.status(500).json(e)
+    }
+}
+
+async function sendEmailNotification(payment, transactionType) {
+    try {
+        // Fetch necessary data for email content
+        const customer = await CustomerProfile.findOne({'_id': payment.customerId});
+        const user = await User.findOne({'_id': customer.userId})
+        const order = await Order.findOne({'_id': payment.orderId}).populate({
+            path: "packages.packageId channels.channelId",
+            select: "packageName channelName"
+        })
+        
+        // const emailContent = `Dear ${customer.customerName},\n\n
+        //                         Your payment with transaction ID ${payment.transactionId} has been successfully processed.\n 
+        //                         Thank you for your purchase.\n
+        //                         Your are subscribed for: \n
+        //                         PACKAGES\n
+        //                         ${order.packages.map(ele=> ele.packageId.packageName).join('\n')}\n
+        //                         CHANNELS\n
+        //                         ${order.channels.map(ele => ele.channelId.channelName).join('\n')}`;
+
+        let emailContent
+        if(transactionType === 'update'){
+            emailContent = `Dear ${customer.customerName},\n\n
+                            Your payment with transaction ID ${payment.transactionId} has been successfully updated.\n 
+                            Thank you for your purchase.\n
+                            Your subscription details have been updated.`;
+        }else if(transactionType === 'activate'){
+            emailContent = `Dear ${customer.customerName},\n\n
+            Your subscription with transaction ID ${payment.transactionId} has been successfully activated.\n 
+            Thank you for your purchase.\n
+            You are now subscribed to the following packages and channels:\n
+            PACKAGES\n
+            ${order.packages.map(ele=> ele.packageId.packageName).join('\n')}\n
+            CHANNELS\n
+            ${order.channels.map(ele => ele.channelId.channelName).join('\n')}`;
+
+        }
+        //Define email options
+        const mailOptions = {
+            from: 'chippekeerthi@gmail.com',
+            to: `${user.email}`, // Assuming customer's email is stored in the CustomerProfile model
+            subject: 'Payment Confirmation',
+            text: emailContent
+        };
+
+        // Send the email
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.log("Error sending email notification:", error);
     }
 }
 
