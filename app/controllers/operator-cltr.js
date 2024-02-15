@@ -56,7 +56,6 @@ operatorsCltr.create = async (req, res) => {
         res.json(operator)
     }
     catch (e) {
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -88,7 +87,6 @@ operatorsCltr.listAllOperators = async (req, res) => {
             totalpages: Math.ceil(total / limit)
         })
     } catch (e) {
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -121,8 +119,7 @@ operatorsCltr.updateOperator = async (req, res) => {
         )
 
         return res.status(200).json(user)
-        // const operator = await OperatorProfile.findByIdAndUpdate(id, body, { new: true })
-        // res.status(200).json(operator)
+     
     } catch (e) {
         res.status(500).json(e)
     }
@@ -143,10 +140,22 @@ operatorsCltr.getProfile = async (req, res) => {
     const userId = req.user.id;
     // const id = req.params.id
     try {
-        const operator = await OperatorProfile.findOne({ userId })
-        console.log(operator)
+        const operator = await OperatorProfile.findOne({userId})
         res.json(operator)
     } catch (err) {
+        res.status(500).json(err)
+    }
+}
+
+operatorsCltr.profile = async (req, res)=>{
+    const id = req.params.operatorId
+
+    try {
+        const updatedOperator = await OperatorProfile.findOneAndUpdate(
+            { _id: id}, { image: req.file.filename }, { new: true}
+        );
+        res.status(200).json(updatedOperator)
+    }catch(err){
         res.status(500).json(err)
     }
 }

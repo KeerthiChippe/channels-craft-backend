@@ -20,8 +20,6 @@ customerCltr.create = async ( req,res ) =>{
     try{
         const customer = new CustomerProfile(body)
         customer.operatorId = req.user.operator
-        // console.log(req.user)
-        // console.log(req.user.operator)
         await customer.save()
 
         // Fetching user details to get the email
@@ -59,7 +57,6 @@ customerCltr.create = async ( req,res ) =>{
         res.status(201).json(customer)
        
     }catch(err){
-        console.log(err)
         res.status(500).json(err)
     }
 }
@@ -71,7 +68,6 @@ customerCltr.listAllCustomers = async (req,res) =>{
         const customer = await CustomerProfile.find({operatorId: operator._id})
         res.json(customer)
     }catch(err){
-        console.log(err)
         res.status(400).json(err)
     }
 }
@@ -111,7 +107,6 @@ customerCltr.updateCustomer = async (req, res) => {
         
         res.status(200).json(user)
     } catch (e) {
-        console.log(e);
         res.status(500).json(e);
     }
 };
@@ -125,26 +120,105 @@ customerCltr.deleteCustomer = async (req,res) =>{
             customer = await CustomerProfile.findOneAndDelete({_id: id, operatorId: req.user.operator})
         }
         const user = await User.findOneAndDelete({'_id': customer.userId})
+
         if(!customer){
             return res.status(401).json({errors: 'record not found'})
         }
 
         res.status(201).json(user)
     }catch(err){
-        console.log(err)
         res.status(400).json(err)
     }
 }
+
+customerCltr.assignPackage = async (req, res) => {
+    try {
+      const customerId = req.params.customerId;
+      const packageId = req.body.packageId;
+    //  const packageName = req.body.packageName
+      const expiryDate = req.body.expiryDate || new Date(); 
+  
+      const customer = await CustomerProfile.findOne({ _id: customerId });
+  
+      if (!customer) {
+        return res.status(404).json({ errors: 'Customer not found' });
+      }
+  
+      // Check if package already exists for the customer
+      const existingPackage = customer.currentPackages.find(p => p.packageId === packageId);
+
+      if (existingPackage) {
+        return res.status(400).json({ errors: 'Package already assigned to customer' });
+      }
+  
+      // Push the new package to the customer's array
+    //   customer.currentPackages.push({
+    //     packageId: packageId,
+    //     // packageName: packageName,
+    //     expiryDate: expiryDate
+    //   });
+    const customera = await CustomerProfile.findOneAndUpdate({ _id: customerId }, { $push: { currentPackages: { packageId, expiryDate }}})
+  
+  
+    //   res.json({ message: 'Package assigned successfully' });
+      res.json(customera)
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ errors: 'Failed to assign package' });
+    }
+  };
+  
+customerCltr.assignChannel = async (req, res)=>{
+    try{
+        const customerId = req.params.customerId
+        const channelId = req.body.channelId
+        const expiryDate = req.body.expiryDate || new Date()
+
+        const customer = await CustomerProfile.findOne({_id: customerId})
+
+        if(!customer){
+            return res.status(400).json({errors: 'customer not found'})
+        }
+
+        const existingChannel = customer.currentChannels.find(c => c._id === channelId)
+        if(existingChannel){
+            return res.status(400).json({errors: 'Channel already assigned to customer'})
+        }
+
+        customer.currentChannels.push({
+            channelId: channelId,
+            expiryDate: expiryDate
+        })
+        await customer.save()
+        res.json(customer)
+    }catch(err){
+        res.status(500).json({ errors: 'Failed to assign channel' });
+    }
+}
+
+customerCltr.profile = async(req , res) =>{
+    const id = req.params.customerId
+    try{
+        const updatedCustomer = await CustomerProfile.findOneAndUpdate(
+            {_id:id} , {image : req.file.filename} ,{ new:true }
+        )
+        res.status(200).json(updatedCustomer)
+    }catch(err){
+        res.status(500).json(err)
+    }
+}
+
 
 customerCltr.getProfile = async (req, res)=>{
     const userId = req.user.id
     try{
         const customer = await CustomerProfile.findOne({userId})
         customer.userId = req.user.id
-        // console.log(customer)
+
         res.json(customer)
+    
     }catch(e){
-        // console.log(e)
+
         res.status(500).json(e)
     }
 }

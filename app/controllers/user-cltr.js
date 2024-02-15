@@ -46,7 +46,6 @@ usersCltr.register = async (req, res) => {
 
         return res.status(201).json(user)
     } catch (e) {
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -121,6 +120,16 @@ usersCltr.login = async (req, res) => {
 //         res.status(500).json(e)
 //     }
 // }
+//         if (req.user.role == 'operator') {
+//             user.password = encryptedPassword
+//             user.operatorId = req.user.operator
+//             await user.save()
+//             return res.status(201).json(user)
+//         }
+//     } catch (e) {
+//         res.status(500).json(e)
+//     }
+// }
 
 usersCltr.forgotPassword = async (req, res) => {
     const body = _.pick(req.body, ['email'])
@@ -159,7 +168,6 @@ usersCltr.forgotPassword = async (req, res) => {
             }
         });
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -177,7 +185,6 @@ usersCltr.resetPassword = async(req, res)=>{
                 }        
                 res.send({Status: 'Success'})
             }catch(e){
-                console.log(e)
                 return res.status(500).json(e)
             }
 }

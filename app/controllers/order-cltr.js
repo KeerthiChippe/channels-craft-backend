@@ -38,14 +38,12 @@ ordersCltr.create = async (req, res)=>{
             order.customerId = user.id
             order.operatorId = user.operatorId
         }
-        // console.log(user, req.user.id , "33")
         await order.save()
         await CustomerProfile.findOneAndUpdate(
             {_id: order.customerId}, {$push: {currentPackages: order.packages, currentChannels: order.channels}}, {new: true}
         )
         res.status(201).json(order)
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -65,7 +63,6 @@ ordersCltr.list = async (req, res)=>{
         })
         res.json(order)
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }
