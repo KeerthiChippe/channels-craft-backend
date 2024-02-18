@@ -11,8 +11,8 @@ const paymentsCltr = {}
 var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'chippekeerthi@gmail.com',
-        pass: 'nyey oyoc omdm vobw'
+        user: process.env.GMAIL,
+        pass: process.env.PASS
     }
 });
 
@@ -156,7 +156,7 @@ async function sendEmailNotification(payment, transactionType) {
         }
         //Define email options
         const mailOptions = {
-            from: 'chippekeerthi@gmail.com',
+            from: process.env.GMAIL,
             to: `${user.email}`, // Assuming customer's email is stored in the CustomerProfile model
             subject: 'Payment Confirmation',
             text: emailContent

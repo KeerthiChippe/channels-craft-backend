@@ -32,9 +32,22 @@ packagesCltr.create = async (req, res)=>{
 
 packagesCltr.listAllPackages = async (req, res)=>{
     try{
-        const package = await Package.find({isDeleted: false})
-        res.json(package)
+        const packages = await Package.find({isDeleted: false})
+        const packagesWithChannels = await Promise.all(packages.map(async (pkg) => {
+            const selectedChannels = await Promise.all(pkg.selectedChannels.map(async (channelName) => {
+              const channel = await Channel.findOne({ channelName });
+              if(channel){
+                return { channelName, image: channel.image };
+              }else {
+                        return { channelName, image: null }; // Provide a default image URL
+                    }
+            }));
+            return { ...pkg.toObject(), selectedChannels };
+          }));
+          res.json(packagesWithChannels);
+        // res.json(package)
     }catch(e){
+        console.log(e)
         res.status(400).json(e)
     }
 }

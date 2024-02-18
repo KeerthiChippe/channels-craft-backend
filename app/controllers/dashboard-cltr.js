@@ -57,7 +57,7 @@ dashboardCltrs.trendingPackages = async (req, res) => {
                 soldPackagesCount[package.packageId] = (soldPackagesCount[package.packageId] || 0) + 1;
             });
         } else {
-            console.log('No packages found for orderId:', payment.orderId);
+            // console.log('No packages found for orderId:', payment.orderId);
         }
     }
     
@@ -77,7 +77,7 @@ dashboardCltrs.trendingPackages = async (req, res) => {
         };
       }));
   
-      console.log(trendingPackages, 'trendingPackages')
+      // console.log(trendingPackages, 'trendingPackages')
       res.json(trendingPackages);
     } catch (error) {
       console.error('Error fetching trending packages:', error);

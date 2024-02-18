@@ -105,7 +105,7 @@ app.post('/api/reset-password/:id/:token', usersCltr.resetPassword)
 app.get('/api/users/profile', authenticateUser, usersCltr.profile)
 app.put('/api/users/:id',authenticateUser, usersCltr.updateUser)
 app.delete('/api/users/:id', authenticateUser, usersCltr.deleteUser)
-app.get('/api/listAllUsers', authenticateUser, authorizeUser(['admin', 'operator']), usersCltr.listAllUsers)
+app.get('/api/listAllUsers', authenticateUser, authorizeUser(['admin', 'operator', 'customer']), usersCltr.listAllUsers)
 app.get('/api/listSingleUser/:id', authenticateUser, authorizeUser(['admin']), usersCltr.listSingleUser)
 
 //operators api
@@ -134,8 +134,8 @@ app.delete('/api/deleteChannel/:id', authenticateUser, authorizeUser(['admin']),
 
 //customers api
 app.post('/api/customers',authenticateUser, authorizeUser(['operator']), checkSchema(customerSchema),customerCltr.create)
-app.get('/api/listAllCustomers',authenticateUser,authorizeUser(['operator']),customerCltr.listAllCustomers)
-app.get('/api/singleCustomer/:id',authenticateUser,authorizeUser(['operator']),customerCltr.singleCustomer)
+app.get('/api/listAllCustomers',authenticateUser,authorizeUser(['operator', 'customer']),customerCltr.listAllCustomers)
+app.get('/api/singleCustomer/:id',authenticateUser,authorizeUser(['operator', 'customer']),customerCltr.singleCustomer)
 app.put('/api/customer/:customerId', authenticateUser, authorizeUser(['customer','operator']), checkSchema(customerUpdateSchema), customerCltr.updateCustomer)
 app.put('/api/customer/:customerId/profile', authenticateUser, authorizeUser(['customer']), upload.single('file'), customerCltr.profile)
 app.delete('/api/customer/:id',authenticateUser,authorizeUser(['operator']),customerCltr.deleteCustomer)
