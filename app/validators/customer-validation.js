@@ -28,6 +28,16 @@ const customerValidationSchema = {
         },
         isLength: {
             options: { max: 15 },
+        },
+        custom: {
+            options: async (value)=>{
+                const customer = await CustomerProfile.findOne({boxNumber: value})
+                if(customer){
+                    throw new Error('Box number is already in use. Try with other number')
+                }else{
+                    return true
+                }
+            }
         }
     },
     'address.doorNumber': {

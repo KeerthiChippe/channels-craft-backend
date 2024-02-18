@@ -93,54 +93,6 @@ usersCltr.login = async (req, res) => {
     }
 }
 
-// usersCltr.createUser = async (req, res) => {
-//     const errors = validationResult(req)
-//     if (!errors.isEmpty()) {
-//         return res.status(400).json({ errors: errors.array() })
-//     }
-    
-//     try {
-//         const body = _.pick(req.body, ['username', 'email', 'mobile', 'password', 'role'])
-//         if (body.role !== 'customer') {
-//             return res.status(400).json({ errors : 'Invalid role. Only customer allowed.' });
-//         }
-
-//         const user = new User(body)
-//         const salt = await bcryptjs.genSalt()
-//         const encryptedPassword = await bcryptjs.hash(user.password, salt)
-
-//         if (req.user.role == 'operator') {
-//             user.password = encryptedPassword
-//             user.operatorId = req.user.operator
-//             await user.save()
-//             return res.status(201).json(user)
-//         }
-//     } catch (e) {
-//         console.log(e.message)
-//         res.status(500).json(e)
-//     }
-// }
-//         if (req.user.role == 'operator') {
-//             user.password = encryptedPassword
-//             user.operatorId = req.user.operator
-//             await user.save()
-//             return res.status(201).json(user)
-//         }
-//     } catch (e) {
-//         res.status(500).json(e)
-//     }
-// }
-//         if (req.user.role == 'operator') {
-//             user.password = encryptedPassword
-//             user.operatorId = req.user.operator
-//             await user.save()
-//             return res.status(201).json(user)
-//         }
-//     } catch (e) {
-//         res.status(500).json(e)
-//     }
-// }
-
 usersCltr.forgotPassword = async (req, res) => {
     const body = _.pick(req.body, ['email'])
     try {
@@ -153,8 +105,8 @@ usersCltr.forgotPassword = async (req, res) => {
         var transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'chippekeerthi@gmail.com',
-                pass: 'nyey oyoc omdm vobw'
+                user: process.env.GMAIL,
+                pass: process.env.PASS
             }
         });
 
@@ -163,7 +115,7 @@ usersCltr.forgotPassword = async (req, res) => {
             res.status(200).json({token : token})
 
         var mailOptions = {
-            from: 'chippekeerthi@gmail.com',
+            from: process.env.GMAIL,
             to: `${user.email}`,
             subject: 'Reset your password',
             text: `<a href=http://localhost:3000/reset-password/${user._id}/${token}> Click here to reset your password</a>`
@@ -198,35 +150,6 @@ usersCltr.resetPassword = async(req, res)=>{
                 return res.status(500).json(e)
             }
 }
-
-// usersCltr.createUser = async(req, res) =>{
-//     const errors = validationResult(req)
-//     if(!errors.isEmpty()){
-//         return res.status(400).json({errors: errors.array()})
-//     }
-//     const body = _.pick(req.body, ['username','email', 'mobile', 'password', 'role'])
-//     try{
-//         const user  = new User(body)
-//         const salt = await bcryptjs.genSalt()
-//         const encryptedPassword = await bcryptjs.hash(user.password, salt)
-//         if(req.user.role == 'admin'){
-//             user.password =encryptedPassword
-//             user.adminId = req.user.id
-//             await user.save()
-            
-//         }else
-//         if(req.user.role == 'operator'){
-//             user.password = encryptedPassword
-//             user.operatorId = req.user.operator
-//             await user.save()
-//         }
-//         return res.status(201).json(user)
-
-//     }catch(e){
-//         console.log(e)
-//         res.status(500).json(e)
-//     }
-// }
 
 usersCltr.profile = async (req, res) => {
     try {
@@ -276,49 +199,6 @@ usersCltr.deleteUser = async (req, res) => {
     }
 }
 
-// usersCltr.listAllUsers = async (req, res) => {
-//     let users = []
-//     if (req.user.role === 'admin') {
-//         try {
-//             users = await User.find()
-//             res.json(users)
-//         } catch (e) {
-//             res.json(e)
-//         }
-//     }else if (req.user.role === 'operator') {
-//         // If the user is an operator, find the operator's details
-//         const operator = await OperatorProfile.findOne({ userId: req.user.id });
-//         // Find customers associated with the operator
-//         const customers = await CustomerProfile.find({ operatorId: operator._id });
-//         // Find all users including the operator and customers
-//         const operatorUser = await User.findOne({ _id: operator.userId });
-//         const customerUsers = await User.find({ _id: { $in: customers.map(customer => customer.userId) } });
-        
-//         // Combine operator user and customer users
-//         users = [operatorUser, ...customerUsers];
-//         res.json(users); 
-//     }else {
-//         res.json({ errors: "you don't have access" })
-//     }
-// }
-    // try{
-    //     if(req.user.role === 'admin'){
-    //         const user = await User.find()
-    //     }else if(req.user.role === 'operator'){
-    //         const operator = await OperatorProfile.findOne({userId: req.user.id})
-    //         console.log(operator, '1234')
-    //         const customer = await CustomerProfile.findOne({operatorId: operator._id})
-    //         console.log(customer, '5678')
-    //         const user = await User.find({_id: operator.userId, _id: customer.userId})
-    //         console.log(user, '9012')
-    //         res.json(user)
-    //     }
-    // }catch(e){
-    //     console.log(e)
-    //     res.status(500).json(e)
-    // }
-
-
 usersCltr.listAllUsers = async (req, res) => {
     try {
         let users = [];
@@ -333,6 +213,14 @@ usersCltr.listAllUsers = async (req, res) => {
 
             res.json(users);
         }
+        // else if (req.user.role === 'customer'){
+        //     const customer = await User.findOne({_id: req.user.id})
+        //     if(customer){
+        //         res.json(customer)
+        //     }else{
+        //         res.status(400).json({message: 'Customer not found'})
+        //     }
+        // }
 
        
     } catch (e) {
@@ -340,6 +228,32 @@ usersCltr.listAllUsers = async (req, res) => {
         res.status(500).json(e);
     }
 }
+
+// usersCltr.listAllUsers = async (req, res) => {
+//     try {
+//         if (req.user.role === 'customer') {
+//             // If the user is a customer, find the details of the current customer
+//             const customer = await User.findOne({ _id: req.user.id });
+//             if (customer) {
+//                 res.json(customer);
+//             } else {
+//                 res.status(404).json({ message: 'Customer not found' });
+//             }
+//         } else if (req.user.role === 'admin') {
+//             // If the user is an admin, find all users
+//             const users = await User.find();
+//             res.json(users);
+//         } else if (req.user.role === 'operator') {
+//             // If the user is an operator, find all users associated with the operator
+//             const users = await User.find({ operatorId: req.user.operator });
+//             res.json(users);
+//         }
+//     } catch (e) {
+//         console.log(e);
+//         res.status(500).json(e);
+//     }
+// };
+
 
 
 usersCltr.listSingleUser = async (req, res) => {
