@@ -9,12 +9,12 @@ const packageValidationSchema = {
             errorMessage: 'price for the package is required'
         }
     },
-    // channels: {
-    //     isArray: {
-    //         options: {min: 1},
-    //         errorMessage: 'minimum one channel is required'
-    //     }
-    // }
+    selectedChannels: {
+        isLength: {
+            options: {min: 1},
+            errorMessage: 'minimum one channel is required'
+        }
+    }
 }
 
 const packageUpdateValidationSchema = {

@@ -26,12 +26,12 @@ operatorsCltr.create = async (req, res) => {
         var transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'chippekeerthi@gmail.com',
-                pass: 'nyey oyoc omdm vobw'
+                user: process.env.GMAIL,
+                pass: process.env.PASS
             }
         });
         var mailOptions = {
-            from: `chippekeerthi@gmail.com`,
+            from: process.env.GMAIL,
             to: `${user.email}`,
             subject: 'Operator Account Created',
             html:
@@ -40,7 +40,7 @@ operatorsCltr.create = async (req, res) => {
                 <p>Your operator account has been successfully created.</p>
                 <p>Here are your credentials:</p>
                 <p>Mobile: ${body.mobile}</p>
-                <p>Password: secret123 (as per your system's policy)</p>
+                <p>Password: ${user.password} (as per your system's policy)</p>
                 <p>Please keep your credentials safe.</p>
                 <p>Thank you.</p>`
         };
