@@ -28,6 +28,16 @@ const customerValidationSchema = {
         },
         isLength: {
             options: { max: 15 },
+        },
+        custom:{
+            options: async function (value){
+                const existingboxNumber = await Channel.findOne({boxNumber:value })
+                if(existingboxNumber){
+                    throw new Error ('box number already exists')
+                }else{
+                    return true
+                }
+            }
         }
     },
     'address.doorNumber': {

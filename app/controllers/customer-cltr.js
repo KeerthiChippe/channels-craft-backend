@@ -16,7 +16,7 @@ customerCltr.create = async ( req,res ) =>{
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()})
     }
-    const body = _.pick(req.body,['mobile','customerName','address','boxNumber', 'currentPackages', 'currentChannels', 'expiryDate', 'userId'])
+    const body = _.pick(req.body,['mobile','customerName','address','boxNumber', 'currentPackages', 'currentChannels', 'expiryDate', 'userId','image'])
     try{
         const customer = new CustomerProfile(body)
         customer.operatorId = req.user.operator
