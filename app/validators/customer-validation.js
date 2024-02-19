@@ -1,5 +1,6 @@
 const CustomerProfile = require('../models/customerProfile-model')
 const Package = require('../models/package-model')
+const Channel = require('../models/channel-model')
 
 const customerValidationSchema = {
     customerName: {
@@ -31,7 +32,7 @@ const customerValidationSchema = {
         },
         custom:{
             options: async function (value){
-                const existingboxNumber = await Channel.findOne({boxNumber:value })
+                const existingboxNumber = await CustomerProfile.findOne({boxNumber:value })
                 if(existingboxNumber){
                     throw new Error ('box number already exists')
                 }else{

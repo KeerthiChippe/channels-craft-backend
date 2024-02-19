@@ -151,7 +151,7 @@ app.get('/api/allorders', authenticateUser, authorizeUser(['admin']), ordersCltr
 //payments api
 app.get('/api/payment/subscribers', authenticateUser, authorizeUser(['operator']), paymentsCltr.listSubscribers)
 app.post('/api/payment', authenticateUser, authorizeUser(['customer']), paymentsCltr.create)
-
+app.get('/api/payment/expiredOrders', authenticateUser, authorizeUser(['customer']), paymentsCltr.expiredOrders)
 app.put('/api/payment/:id', authenticateUser, authorizeUser(['customer']), paymentsCltr.update)
 // app.post('/api/orders/:id/activate', authenticateUser, authorizeUser(['operator']), ordersCltr.activateSubscription)
 app.put('/api/payment/:id/activate', authenticateUser, authorizeUser(['operator']), paymentsCltr.activateSubscription)

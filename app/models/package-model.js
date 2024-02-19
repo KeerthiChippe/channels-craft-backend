@@ -10,7 +10,7 @@ const packageSchema = new Schema({
         type: Boolean,
         default: false
     }
-})
+}, {timestamps: true})
 
 const Package = model('Package', packageSchema)
 
