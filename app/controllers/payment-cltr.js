@@ -90,7 +90,7 @@ paymentsCltr.update = async (req, res)=>{
 paymentsCltr.listSubscribers = async (req, res)=>{
     try{
         // const subscribers = await Payment.find({status: 'success', activate: false})
-        const subscribers = await Payment.find({status: 'success', activate: false}).populate({
+        const subscribers = await Payment.find({status: 'success', activate: false, operatorId: req.user.operator}).populate({
             path: 'customerId', 
             select: 'customerName'
         }).populate({
@@ -108,7 +108,7 @@ paymentsCltr.listSubscribers = async (req, res)=>{
 paymentsCltr.activateSubscription = async (req, res)=>{
     const paymentId = req.params.id
     try{
-        const payment = await Payment.findByIdAndUpdate({_id: paymentId}, {activate: true}, {new: true})
+        const payment = await Payment.findByIdAndUpdate({_id: paymentId, operatorId: req.user.operator}, {activate: true}, {new: true})
         
         await sendEmailNotification(payment, 'activate')
         res.status(200).json(payment)
@@ -183,5 +183,83 @@ paymentsCltr.delete = async (req, res) =>{
         res.status(500).json(e)
     }
 }
+
+// paymentsCltr.expiredOrders = async (req, res)=>{
+//     try{
+//         const expiredOrders = await Payment.find({ paymentDate: { $lt: new Date() } })
+//         // .populate({
+//         //     path: "packages.packageId channels.channelId",
+//         //     select: "packageName channelName"
+//         // });
+//         res.json(expiredOrders);
+//     }catch(e){
+//         console.log(e)
+//         res.status(500).json(e)
+//     }
+// }
+// paymentsCltr.expiredOrders = async (req, res) => {
+//     try {
+//         const customer = await CustomerProfile.findOne({ 'userId': req.user.id });
+
+//         // Get today's date
+//         const today = new Date();
+
+//         // Calculate the date 30 days ago
+//         const thirtyDaysAgo = new Date();
+//         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+//         console.log(thirtyDaysAgo, "date", customer)
+
+//         // Find expired orders where paymentDate + 30 is equal to today's date
+//         const expiredOrders = await Payment.find({
+//             customerId: customer._id,
+//             paymentDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30) // Adjusted paymentDate to check for paymentDate + 30 equal to today's date
+//         });
+
+//         res.json(expiredOrders);
+//     } catch (e) {
+//         console.log(e);
+//         res.status(500).json(e);
+//     }
+// }
+
+paymentsCltr.expiredOrders = async (req, res) => {
+    try {
+        const customer = await CustomerProfile.findOne({ 'userId': req.user.id });
+
+        // Get today's date (set time to 23:59:59)
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+
+        // Calculate the date 30 days ago (set time to 00:00:00)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+        console.log(thirtyDaysAgo, "date");
+
+        // Find expired orders where paymentDate falls within the last 30 days
+        const expiredOrders = await Payment.find({
+            customerId: customer._id,
+            paymentDate: {
+                $gte: thirtyDaysAgo, // Greater than or equal to the start of thirtyDaysAgo
+                $lte: today // Less than or equal to the end of today
+            }
+        });
+
+        res.json(expiredOrders);
+    } catch (e) {
+        console.log(e);
+        res.status(500).json(e);
+    }
+}
+
+
+
+
+
+
+
+
 
 module.exports = paymentsCltr

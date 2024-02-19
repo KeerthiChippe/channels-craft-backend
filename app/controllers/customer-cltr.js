@@ -57,6 +57,7 @@ customerCltr.create = async ( req,res ) =>{
         res.status(201).json(customer)
        
     }catch(err){
+        console.log(err)
         res.status(500).json(err)
     }
 }
