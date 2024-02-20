@@ -64,10 +64,15 @@ channelsCltr.updateChannel = async (req,res) =>{
     const id= req.params.id
     const body = _.pick(req.body, ['channelPrice'])
     try{
-        const customers = await CustomerProfile.find({ currentChannels: id });
-        if (customers.length > 0) {
-            return res.status(403).json({ message: "Cannot update channel as it is subscribed by customers" });
-        }
+
+        // const channels = await Channel.findById(id);
+        // if (!channel) {
+        //     return res.status(404).json({ message: "Channel not found" });
+        // }
+        // const customers = await CustomerProfile.find({ currentChannels: id });
+        // if (customers.length > 0) {
+        //     return res.status(403).json({ message: "Cannot update channel as it is subscribed by customers" });
+        // }
        
         const channel = await Channel.findByIdAndUpdate(id,body,{new : true})
  

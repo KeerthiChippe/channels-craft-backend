@@ -24,6 +24,7 @@ customerCltr.create = async ( req,res ) =>{
 
         // Fetching user details to get the email
         const user = await User.findById(body.userId)
+       
 
         var transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -57,7 +58,7 @@ customerCltr.create = async ( req,res ) =>{
         res.status(201).json(customer)
        
     }catch(err){
-        // console.log(err)
+        console.log(err)
         res.status(500).json(err)
     }
 }
