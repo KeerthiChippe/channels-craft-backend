@@ -84,7 +84,7 @@ ordersCltr.listAllOrders = async (req, res)=>{
         }).populate({
             path: 'orderDate'
         })
-        console.log(order, "order")
+        // console.log(order, "order")
         res.status(200).json(order)
     }catch(e){
         res.status(500).json(e)

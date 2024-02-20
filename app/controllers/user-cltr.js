@@ -5,7 +5,6 @@ const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const User = require('../models/user-model')
 const OperatorProfile = require("../models/operatorProfile-model");
-const CustomerProfile = require('../models/customerProfile-model');
 
 const usersCltr = {}
 

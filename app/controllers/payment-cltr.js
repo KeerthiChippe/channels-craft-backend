@@ -127,16 +127,6 @@ async function sendEmailNotification(payment, transactionType) {
             path: "packages.packageId channels.channelId",
             select: "packageName channelName"
         })
-        
-        // const emailContent = `Dear ${customer.customerName},\n\n
-        //                         Your payment with transaction ID ${payment.transactionId} has been successfully processed.\n 
-        //                         Thank you for your purchase.\n
-        //                         Your are subscribed for: \n
-        //                         PACKAGES\n
-        //                         ${order.packages.map(ele=> ele.packageId.packageName).join('\n')}\n
-        //                         CHANNELS\n
-        //                         ${order.channels.map(ele => ele.channelId.channelName).join('\n')}`;
-
         let emailContent
         if(transactionType === 'update'){
             emailContent = `Dear ${customer.customerName},\n\n
