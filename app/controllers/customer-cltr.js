@@ -24,6 +24,7 @@ customerCltr.create = async ( req,res ) =>{
 
         // Fetching user details to get the email
         const user = await User.findById(body.userId)
+       
 
         var transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -193,7 +194,7 @@ customerCltr.assignPackage = async (req, res) => {
     //   res.json({ message: 'Package assigned successfully' });
       res.json(customera)
     } catch (err) {
-      console.error(err);
+    //   console.error(err);
       res.status(500).json({ errors: 'Failed to assign package' });
     }
   };
@@ -244,7 +245,7 @@ customerCltr.getProfile = async (req, res)=>{
     try{
         const customer = await CustomerProfile.findOne({userId})
         customer.userId = req.user.id
-        console.log(customer, "cus")
+        // console.log(customer, "cus")
         res.json(customer)
     
     }catch(e){
@@ -303,7 +304,7 @@ const sendReminderEmail = async () => {
       // Find orders/payments that are expiring within the threshold date
     //   const orders = await Order.find({ paid: { $lte: expiryDateThreshold } }).populate('customerI');
     const orders = await Order.find({ orderDate: { $lte: today } }).populate('customerId');
-    console.log(orders, 'orders')
+    // console.log(orders, 'orders')
       // Send reminder emails to customers associated with these orders
    
     for (const order of orders) {
@@ -314,7 +315,7 @@ const sendReminderEmail = async () => {
       console.error('Error:', error);
     }
   }, {
-    scheduled: true,
+    // scheduled: true,
     timezone: 'Asia/Kolkata', // Set your timezone
   });
   

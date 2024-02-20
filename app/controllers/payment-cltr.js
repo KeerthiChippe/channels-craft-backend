@@ -127,16 +127,6 @@ async function sendEmailNotification(payment, transactionType) {
             path: "packages.packageId channels.channelId",
             select: "packageName channelName"
         })
-        
-        // const emailContent = `Dear ${customer.customerName},\n\n
-        //                         Your payment with transaction ID ${payment.transactionId} has been successfully processed.\n 
-        //                         Thank you for your purchase.\n
-        //                         Your are subscribed for: \n
-        //                         PACKAGES\n
-        //                         ${order.packages.map(ele=> ele.packageId.packageName).join('\n')}\n
-        //                         CHANNELS\n
-        //                         ${order.channels.map(ele => ele.channelId.channelName).join('\n')}`;
-
         let emailContent
         if(transactionType === 'update'){
             emailContent = `Dear ${customer.customerName},\n\n
@@ -229,12 +219,12 @@ paymentsCltr.expiredOrders = async (req, res) => {
 
         // Get today's date (set time to 23:59:59)
         const today = new Date();
-        today.setHours(23, 59, 59, 999);
+        today.setHours(0,0,0,0);
 
         // Calculate the date 30 days ago (set time to 00:00:00)
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        thirtyDaysAgo.setHours(0, 0, 0, 0);
+        thirtyDaysAgo.setHours(23, 59, 59, 999);
 
         console.log(thirtyDaysAgo, "date");
 
@@ -242,24 +232,23 @@ paymentsCltr.expiredOrders = async (req, res) => {
         const expiredOrders = await Payment.find({
             customerId: customer._id,
             paymentDate: {
-                $gte: thirtyDaysAgo, // Greater than or equal to the start of thirtyDaysAgo
-                $lte: today // Less than or equal to the end of today
+                $lte: today, // Less than or equal to the end of today
+                $gte: thirtyDaysAgo// Greater than or equal to the start of thirtyDaysAgo
+                
             }
-        });
-
+        }).populate({
+            path: 'orderId',
+            populate: {
+                path: 'packages.packageId',
+                model: 'Package' // Assuming the model name for packages is 'Package'
+            }
+        })
+       
         res.json(expiredOrders);
     } catch (e) {
         console.log(e);
         res.status(500).json(e);
     }
 }
-
-
-
-
-
-
-
-
 
 module.exports = paymentsCltr
