@@ -228,33 +228,6 @@ usersCltr.listAllUsers = async (req, res) => {
     }
 }
 
-// usersCltr.listAllUsers = async (req, res) => {
-//     try {
-//         if (req.user.role === 'customer') {
-//             // If the user is a customer, find the details of the current customer
-//             const customer = await User.findOne({ _id: req.user.id });
-//             if (customer) {
-//                 res.json(customer);
-//             } else {
-//                 res.status(404).json({ message: 'Customer not found' });
-//             }
-//         } else if (req.user.role === 'admin') {
-//             // If the user is an admin, find all users
-//             const users = await User.find();
-//             res.json(users);
-//         } else if (req.user.role === 'operator') {
-//             // If the user is an operator, find all users associated with the operator
-//             const users = await User.find({ operatorId: req.user.operator });
-//             res.json(users);
-//         }
-//     } catch (e) {
-//         console.log(e);
-//         res.status(500).json(e);
-//     }
-// };
-
-
-
 usersCltr.listSingleUser = async (req, res) => {
     const id = req.params.id
     try {

@@ -6,6 +6,7 @@ const CustomerProfile = require('../models/customerProfile-model')
 const Order = require('../models/order-model')
 const User = require('../models/user-model')
 const nodemailer = require('nodemailer')
+const { startOfMonth, subMonths, addDays } = require('date-fns');
 
 const paymentsCltr = {}
 var transporter = nodemailer.createTransport({
@@ -174,81 +175,108 @@ paymentsCltr.delete = async (req, res) =>{
     }
 }
 
-// paymentsCltr.expiredOrders = async (req, res)=>{
-//     try{
-//         const expiredOrders = await Payment.find({ paymentDate: { $lt: new Date() } })
-//         // .populate({
-//         //     path: "packages.packageId channels.channelId",
-//         //     select: "packageName channelName"
-//         // });
-//         res.json(expiredOrders);
-//     }catch(e){
-//         console.log(e)
-//         res.status(500).json(e)
-//     }
-// }
-// paymentsCltr.expiredOrders = async (req, res) => {
-//     try {
-//         const customer = await CustomerProfile.findOne({ 'userId': req.user.id });
-
-//         // Get today's date
-//         const today = new Date();
-
-//         // Calculate the date 30 days ago
-//         const thirtyDaysAgo = new Date();
-//         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-//         console.log(thirtyDaysAgo, "date", customer)
-
-//         // Find expired orders where paymentDate + 30 is equal to today's date
-//         const expiredOrders = await Payment.find({
-//             customerId: customer._id,
-//             paymentDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30) // Adjusted paymentDate to check for paymentDate + 30 equal to today's date
-//         });
-
-//         res.json(expiredOrders);
-//     } catch (e) {
-//         console.log(e);
-//         res.status(500).json(e);
-//     }
-// }
-
 paymentsCltr.expiredOrders = async (req, res) => {
     try {
         const customer = await CustomerProfile.findOne({ 'userId': req.user.id });
 
-        // Get today's date (set time to 23:59:59)
-        const today = new Date();
-        today.setHours(0,0,0,0);
+        if (!customer) {
+            return res.status(400).json({ message: "Customer not found" });
+        }
 
-        // Calculate the date 30 days ago (set time to 00:00:00)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        thirtyDaysAgo.setHours(23, 59, 59, 999);
-
-        console.log(thirtyDaysAgo, "date");
-
-        // Find expired orders where paymentDate falls within the last 30 days
-        const expiredOrders = await Payment.find({
+        // Find all payments for the customer
+        const payments = await Payment.find({
             customerId: customer._id,
-            paymentDate: {
-                $lte: today, // Less than or equal to the end of today
-                $gte: thirtyDaysAgo// Greater than or equal to the start of thirtyDaysAgo
-                
-            }
+            status: 'success',
+            activate: true
         }).populate({
-            path: 'orderId',
-            populate: {
-                path: 'packages.packageId',
-                model: 'Package' // Assuming the model name for packages is 'Package'
-            }
-        })
-       
+                         path: 'orderId',
+                       populate: {
+                           path: 'packages.packageId channels.channelId',
+                            //  model: 'Package' // Assuming the model name for packages is 'Package'
+                         }
+                     });
+
+        // Calculate thirty days ago for each payment
+        const expiredOrders = payments.filter(payment => {
+            const thirtyDaysAgo = new Date(payment.paymentDate);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() + 30); // Add 30 days
+            // console.log(thirtyDaysAgo, 'date')
+            const today = new Date();
+            return today > thirtyDaysAgo; // Check if the payment is older than thirty days
+        });
+
         res.json(expiredOrders);
     } catch (e) {
         console.log(e);
         res.status(500).json(e);
     }
 }
+
+
+paymentsCltr.listSubscribersLastThreeMonths = async (req, res)=>{
+    try{
+        const threeMonthsAgo = subMonths(new Date(), 3);
+        const startOfCurrentMonth = startOfMonth(new Date());
+        // console.log(threeMonthsAgo, 'threeMonthsAgo')
+        const subscribers = await Payment.find({
+            status: 'success',
+            activate: true,
+            operatorId: req.user.operator,
+            paymentDate:  { $gte: threeMonthsAgo, $lte: startOfCurrentMonth }  // Filter payments in the last 3 months
+        }).populate('customerId', 'customerName');
+        res.json(subscribers);
+    }catch(e){
+        console.log(e);
+        res.json(e);
+    }
+}
+
+paymentsCltr.listIncomeLastThreeMonths = async (req, res)=>{
+    try{
+        const threeMonthsAgo = subMonths(new Date(), 3);
+        const startOfCurrentMonth = startOfMonth(new Date());
+        
+        // Find all successful payments within the last three months
+        const payments = await Payment.find({
+            status: 'success',
+            activate: true,
+            operatorId: req.user.operator,
+            paymentDate: { $gte: threeMonthsAgo, $lte: startOfCurrentMonth }
+        });
+        
+        // Calculate total income
+        const totalIncome = payments.reduce((total, payment) => total + payment.amount, 0);
+        
+        res.json({ totalIncome });
+    } catch(e) {
+        console.error('Error fetching income data:', e);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+paymentsCltr.lastTenPayments = async (req, res) => {
+
+    try {
+        const lastTenPayments = await Payment.find({
+            operatorId: req.user.operator,
+            status: 'success',
+            activate: true,
+        }).sort({ paymentDate: -1 }).limit(10).populate('customerId', 'customerName').populate({
+            path: 'orderId',
+            populate: {
+                path: 'packages.packageId channels.channelId',
+                // model: 'Package',
+                select: 'packageName channelName'
+            }
+            
+        })
+
+        res.json(lastTenPayments);
+    } catch (error) {
+        console.error('Error fetching payments:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
 
 module.exports = paymentsCltr

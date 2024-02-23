@@ -135,6 +135,7 @@ app.delete('/api/deleteChannel/:id', authenticateUser, authorizeUser(['admin']),
 //customers api
 app.post('/api/customers',authenticateUser, authorizeUser(['operator']), checkSchema(customerSchema),customerCltr.create)
 app.get('/api/listAllCustomers',authenticateUser,authorizeUser(['operator', 'customer']),customerCltr.listAllCustomers)
+app.get('/api/:operatorId/customers', authenticateUser, authorizeUser(['admin']), customerCltr.getCustomersByOperatorId)
 app.get('/api/singleCustomer/:id',authenticateUser,authorizeUser(['operator', 'customer']),customerCltr.singleCustomer)
 app.put('/api/customer/:customerId', authenticateUser, authorizeUser(['customer','operator']), checkSchema(customerUpdateSchema), customerCltr.updateCustomer)
 app.put('/api/customer/:customerId/profile', authenticateUser, authorizeUser(['customer']), upload.single('file'), customerCltr.profile)
@@ -145,11 +146,15 @@ app.get('/api/customer/profile', authenticateUser, authorizeUser(['customer']), 
 app.post('/api/orders', authenticateUser, authorizeUser(['operator', 'customer']), checkSchema(orderSchema), ordersCltr.create)
 app.get('/api/orders', authenticateUser, authorizeUser(['customer']), ordersCltr.list)
 app.get('/api/allorders', authenticateUser, authorizeUser(['admin']), ordersCltr.listAllOrders)
+app.get('/api/orders/:orderId', authenticateUser, authorizeUser(['customer']), ordersCltr.buyAgain)
 
 // app.get('/api/orders/:operatorId', authenticateUser, authorizeUser(['operator']), ordersCltr.fetchOrdersWithCustomerDetails)
 
 //payments api
 app.get('/api/payment/subscribers', authenticateUser, authorizeUser(['operator']), paymentsCltr.listSubscribers)
+app.get('/api/payment/subscribersLastThreeMonths', authenticateUser, authorizeUser(['operator']), paymentsCltr.listSubscribersLastThreeMonths);
+app.get('/api/payment/listIncomeLastThreeMonths', authenticateUser, authorizeUser(['operator']), paymentsCltr.listIncomeLastThreeMonths)
+app.get('/api/payment/listLastTenPayments', authenticateUser, authorizeUser(['operator']), paymentsCltr.lastTenPayments)
 app.post('/api/payment', authenticateUser, authorizeUser(['customer']), paymentsCltr.create)
 app.get('/api/payment/expiredOrders', authenticateUser, authorizeUser(['customer']), paymentsCltr.expiredOrders)
 app.put('/api/payment/:id', authenticateUser, authorizeUser(['customer']), paymentsCltr.update)

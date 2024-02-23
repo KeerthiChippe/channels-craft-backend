@@ -7,6 +7,7 @@ const CustomerProfile = require('../models/customerProfile-model')
 const User =  require('../models/user-model')
 const OperatorProfile = require('../models/operatorProfile-model')
 const Order = require('../models/order-model')
+const Payment = require('../models/payment-model')
 
 const customerCltr={}
 
@@ -74,6 +75,18 @@ customerCltr.listAllCustomers = async (req,res) =>{
         res.status(400).json(err)
     }
 }
+
+customerCltr.getCustomersByOperatorId = async (req, res) => {
+    try {
+      const { operatorId } = req.params;
+      const customers = await CustomerProfile.find({ operatorId });
+      console.log(customers, "hhhh")
+      res.json(customers);
+    } catch (error) {
+      console.error('Error fetching customers by operator ID:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
 
 // // to view one customer
 // customerCltr.singleCustomer = async (req,res) =>{
@@ -162,71 +175,6 @@ customerCltr.deleteCustomer = async (req,res) =>{
     }
 }
 
-customerCltr.assignPackage = async (req, res) => {
-    try {
-      const customerId = req.params.customerId;
-      const packageId = req.body.packageId;
-    //  const packageName = req.body.packageName
-      const expiryDate = req.body.expiryDate || new Date(); 
-  
-      const customer = await CustomerProfile.findOne({ _id: customerId });
-  
-      if (!customer) {
-        return res.status(404).json({ errors: 'Customer not found' });
-      }
-  
-      // Check if package already exists for the customer
-      const existingPackage = customer.currentPackages.find(p => p.packageId === packageId);
-
-      if (existingPackage) {
-        return res.status(400).json({ errors: 'Package already assigned to customer' });
-      }
-  
-      // Push the new package to the customer's array
-    //   customer.currentPackages.push({
-    //     packageId: packageId,
-    //     // packageName: packageName,
-    //     expiryDate: expiryDate
-    //   });
-    const customera = await CustomerProfile.findOneAndUpdate({ _id: customerId }, { $push: { currentPackages: { packageId, expiryDate }}})
-  
-  
-    //   res.json({ message: 'Package assigned successfully' });
-      res.json(customera)
-    } catch (err) {
-    //   console.error(err);
-      res.status(500).json({ errors: 'Failed to assign package' });
-    }
-  };
-  
-customerCltr.assignChannel = async (req, res)=>{
-    try{
-        const customerId = req.params.customerId
-        const channelId = req.body.channelId
-        const expiryDate = req.body.expiryDate || new Date()
-
-        const customer = await CustomerProfile.findOne({_id: customerId})
-
-        if(!customer){
-            return res.status(400).json({errors: 'customer not found'})
-        }
-
-        const existingChannel = customer.currentChannels.find(c => c._id === channelId)
-        if(existingChannel){
-            return res.status(400).json({errors: 'Channel already assigned to customer'})
-        }
-
-        customer.currentChannels.push({
-            channelId: channelId,
-            expiryDate: expiryDate
-        })
-        await customer.save()
-        res.json(customer)
-    }catch(err){
-        res.status(500).json({ errors: 'Failed to assign channel' });
-    }
-}
-
 customerCltr.profile = async(req , res) =>{
     const id = req.params.customerId
     try{
@@ -257,35 +205,18 @@ customerCltr.getProfile = async (req, res)=>{
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'chippekeerthi@gmail.com',
-      pass: 'nyey oyoc omdm vobw',
+      user: process.env.GMAIL,
+      pass: process.env.PASS,
     },
   });
 
-  // Function to calculate subscription expiry date
-const calculateExpiryDate = () => {
-    const expiryDate = addDays(new Date(), 4); // Assuming the subscription lasts for 30 days
-    // console.log(expiryDate, 'expiryDate')
-    return expiryDate;
-   
-};
-// console.log(calculateExpiryDate(), 'calculateExpiryDate')
-
-const sendReminderEmail = async () => {
+const sendReminderEmail = async (customerName, userEmail, expiryDate) => {
     try {
-        const customerId = "65cc5d960646d8eddca1dc90"
-        const customer = await CustomerProfile.findOne({_id: customerId})
-        // console.log(customer, 'customer')
-        const userData = await User.findById(customer.userId);
-        // console.log(userData, 'userData')
-      const expiryDate = calculateExpiryDate();
-    //   console.log(expiryDate, 'expiry')
-      // Use the calculated expiry date to send the reminder email
       const mailOptions = {
-        from: 'chippekeerthi@gmail.com',
-        to: `chippekeerthi02@gmail.com`,
+        from: process.env.GMAIL,
+        to: userEmail,
         subject: 'Subscription Expiry Reminder',
-        text: `Hi ${customer.customerName},\n\nYour subscription is expiring on ${format(expiryDate, 'dd MMMM yyyy')}. Please renew your subscription to continue enjoying our services.\n\nBest Regards,\nYour Service Provider`,
+        text: `Hi ${customerName},\n\nYour subscription is expiring on ${expiryDate}. Please renew your subscription to continue enjoying our services.\n\nBest Regards,\nYour Service Provider`,
       };
   
       await transporter.sendMail(mailOptions);
@@ -296,26 +227,33 @@ const sendReminderEmail = async () => {
   };
 //   console.log(sendReminderEmail, 'sendReminderEmail')
 
-  cron.schedule('11 9 * * *', async () => {
+  cron.schedule('30 8 * * *', async () => {
     try {
-      const today = new Date();
-      const expiryDateThreshold = addDays(today, 4); // Get the threshold date (five days from today)
-    // console.log(expiryDateThreshold, 'expiryDateThreshold')
-      // Find orders/payments that are expiring within the threshold date
-    //   const orders = await Order.find({ paid: { $lte: expiryDateThreshold } }).populate('customerI');
-    const orders = await Order.find({ orderDate: { $lte: today } }).populate('customerId');
-    // console.log(orders, 'orders')
-      // Send reminder emails to customers associated with these orders
-   
-    for (const order of orders) {
-        const expiryDate = calculateExpiryDate(order.orderDate);
-        // await sendReminderEmail(order.customerId, expiryDate);
-    }
+      const payments = await Payment.find({status: 'success', activate: true})
+      const currentDate = new Date();
+      for (const payment of payments) {
+        const expiryDate = addDays(new Date(payment.paymentDate), 30); // Calculate expiry date
+        const reminderDate = addDays(expiryDate, -7); // Calculate reminder date (one week before expiry)
+        
+        if (currentDate >= reminderDate && currentDate < expiryDate) {
+        // Format dates for logging
+        const formattedExpiryDate = format(expiryDate, 'yyyy-MM-dd');
+        const formattedReminderDate = format(reminderDate, 'yyyy-MM-dd');
+  
+        // Log expiry date and reminder date
+        // console.log(`Payment ID: ${payment._id}`);
+        // console.log(`Expiry Date: ${formattedExpiryDate}`);
+        // console.log(`Reminder Date: ${formattedReminderDate}`);
+        const customer = await CustomerProfile.findById(payment.customerId);
+        const user = await User.findById(customer.userId);
+        await sendReminderEmail(customer.customerName, user.email, formattedExpiryDate);
+        }
+      }
     } catch (error) {
       console.error('Error:', error);
     }
   }, {
-    // scheduled: true,
+    scheduled: true,
     timezone: 'Asia/Kolkata', // Set your timezone
   });
   

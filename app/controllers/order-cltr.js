@@ -91,7 +91,19 @@ ordersCltr.listAllOrders = async (req, res)=>{
     }
 }
 
-
+ordersCltr.buyAgain = async (req, res)=>{
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId);
+        if (!order) {
+          return res.status(404).json({ error: 'Order not found' });
+        }
+        res.json(order);
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+}
 
 
 module.exports = ordersCltr
