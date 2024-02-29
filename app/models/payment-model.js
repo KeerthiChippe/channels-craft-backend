@@ -1,5 +1,9 @@
 const mongoose = require ('mongoose')
 const { Schema , model } = mongoose
+const { addDays, format} = require('date-fns')
+
+const dateFormat = format(new Date(), 'yyyy-MM-dd')
+const expiryDate = addDays(dateFormat, 30) 
 
 const paymentSchema = new Schema({
     paymentType: String,
@@ -27,6 +31,14 @@ const paymentSchema = new Schema({
         type: Boolean,
         default: false
     }
+    // expDate: {
+    //     type: Date,
+    //     //  default: expiryDate
+    //     default: function () {
+    //         // Calculate expiry date 30 days from the current date
+    //         return addDays(new Date(), 30);
+    //     }
+    // }
 }, {timestamps: true})
 
 const Payment = model("Payment", paymentSchema)

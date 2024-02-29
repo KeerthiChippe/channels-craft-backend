@@ -80,14 +80,31 @@ customerCltr.getCustomersByOperatorId = async (req, res) => {
     try {
       const { operatorId } = req.params;
       const customers = await CustomerProfile.find({ operatorId });
-      console.log(customers, "hhhh")
+    //   console.log(customers, "hhhh")
       res.json(customers);
     } catch (error) {
       console.error('Error fetching customers by operator ID:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  };
+  }
 
+
+customerCltr.getCustomersByUserId = async (req, res)=>{
+    try{
+        const {userId} = req.params
+        const customers = await CustomerProfile.find({userId}).populate({
+            path: 'currentPackages.packageId',
+            select: 'packageName'
+        }).populate({
+            path: 'operatorId',
+            select: 'operatorName'
+        })
+        res.json(customers)
+    }catch(err){
+        console.log(err)
+        res.status(500).json(e)
+    }
+}
 // // to view one customer
 // customerCltr.singleCustomer = async (req,res) =>{
 //     const id = req.params.id

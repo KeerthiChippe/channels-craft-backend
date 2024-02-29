@@ -61,6 +61,14 @@ operatorsCltr.create = async (req, res) => {
 }
 
 operatorsCltr.listAllOperators = async (req, res) => {
+    // try{
+    //     const operator = await OperatorProfile.find()
+    //     // console.log(operator, 'opeartor list')
+    //     res.json(operator)
+    // }catch(e){
+    //     console.log(e)
+    //     res.status(500).json(e)
+    // }
     const search = req.query.search || ''
     const sortBy = req.query.sortBy || ''
     const order = req.query.order || 1
@@ -98,6 +106,25 @@ operatorsCltr.listSingleOperator = async (req, res) => {
         res.json(operator)
     } catch (e) {
         res.status(500).json(e)
+    }
+}
+
+operatorsCltr.getOperatorByUserId = async (req, res) => {
+    const userId = req.params.userId
+
+    try {
+        // Find the operator based on the provided user ID
+        const operator = await OperatorProfile.findOne({ userId });
+
+        if (!operator) {
+            return res.status(404).json({ message: 'Operator not found' });
+        }
+        console.log(operator, 'operator')
+        // If operator is found, return the details
+        res.status(200).json(operator);
+    } catch (error) {
+        console.error('Error fetching operator details:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
 
