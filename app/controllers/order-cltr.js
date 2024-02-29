@@ -13,6 +13,7 @@ ordersCltr.create = async (req, res)=>{
         return res.status(400).json({errors: errors.array()})
     }
     const body = _.pick(req.body, ["customerId", "operatorId", "packages", "channels", "status", "orderDate", "totalPrice"])
+    const orderDate = new Date()
     try{
         const { customerId, operatorId, packages, channels, status } = req.body
 
@@ -38,12 +39,15 @@ ordersCltr.create = async (req, res)=>{
             order.customerId = user.id
             order.operatorId = user.operatorId
         }
+
         await order.save()
         await CustomerProfile.findOneAndUpdate(
             {_id: order.customerId}, {$push: {currentPackages: order.packages, currentChannels: order.channels}}, {new: true}
         )
+        console.log(order, 'orderpack')
         res.status(201).json(order)
     }catch(e){
+        console.log(e)
         res.status(500).json(e)
     }
 }
