@@ -4,7 +4,7 @@ const _ = require('lodash')
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const User = require('../models/user-model')
-const OperatorProfile = require("../models/operatorProfile-model")
+const OperatorProfile = require("../models/operatorProfile-model");
 
 const usersCltr = {}
 
@@ -28,6 +28,8 @@ usersCltr.register = async (req, res) => {
         if (usersCount === 0) { 
             user.role = 'admin'
         }
+
+
         // else if (usersCount > 0 ) {
         //     user.role = 'operator'
         // }else {
@@ -35,11 +37,14 @@ usersCltr.register = async (req, res) => {
         // }
 
         user.password = encryptedPassword
-
+        if(req.user.role === 'operator'){
+            user.operatorId = req.user.operator
+        }
+       
         await user.save()
+
         return res.status(201).json(user)
     } catch (e) {
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -68,7 +73,7 @@ usersCltr.login = async (req, res) => {
                 role: user.role,
                 operator: operator._id
             }
-            console.log(tokenData)
+            // console.log(tokenData)
 
             const token = jwt.sign(tokenData, process.env.JWT_SECRET, { expiresIn: '14d' })
             res.json({ token: token })
@@ -78,39 +83,11 @@ usersCltr.login = async (req, res) => {
                 id: user._id,
                 role: user.role
             }
-            console.log(tokenData)
+            // console.log(tokenData)
             const token = jwt.sign(tokenData, process.env.JWT_SECRET, { expiresIn: '14d' })
             res.json({ token: token })
         }
     } catch (e) {
-        res.status(500).json(e)
-    }
-}
-
-usersCltr.createUser = async (req, res) => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
-    }
-    
-    try {
-        const body = _.pick(req.body, ['username', 'email', 'mobile', 'password', 'role'])
-        if (body.role !== 'customer') {
-            return res.status(400).json({ errors : 'Invalid role. Only customer allowed.' });
-        }
-
-        const user = new User(body)
-        const salt = await bcryptjs.genSalt()
-        const encryptedPassword = await bcryptjs.hash(user.password, salt)
-
-        if (req.user.role == 'operator') {
-            user.password = encryptedPassword
-            user.operatorId = req.user.operator
-            await user.save()
-            return res.status(201).json(user)
-        }
-    } catch (e) {
-        console.log(e.message)
         res.status(500).json(e)
     }
 }
@@ -127,8 +104,8 @@ usersCltr.forgotPassword = async (req, res) => {
         var transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'chippekeerthi@gmail.com',
-                pass: 'nyey oyoc omdm vobw'
+                user: process.env.GMAIL,
+                pass: process.env.PASS
             }
         });
 
@@ -137,8 +114,8 @@ usersCltr.forgotPassword = async (req, res) => {
             res.status(200).json({token : token})
 
         var mailOptions = {
-            from:`${user.email}`,
-            to: 'chippekeerthi@gmail.com',
+            from: process.env.GMAIL,
+            to: `${user.email}`,
             subject: 'Reset your password',
             text: `<a href=http://localhost:3000/reset-password/${user._id}/${token}> Click here to reset your password</a>`
         };
@@ -152,7 +129,6 @@ usersCltr.forgotPassword = async (req, res) => {
             }
         });
     }catch(e){
-        console.log(e)
         res.status(500).json(e)
     }
 }
@@ -170,38 +146,8 @@ usersCltr.resetPassword = async(req, res)=>{
                 }        
                 res.send({Status: 'Success'})
             }catch(e){
-                console.log(e)
                 return res.status(500).json(e)
             }
-}
-
-usersCltr.createUser = async(req, res) =>{
-    const errors = validationResult(req)
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors: errors.array()})
-    }
-    const body = _.pick(req.body, ['username','email', 'mobile', 'password', 'role'])
-    try{
-        const user  = new User(body)
-        const salt = await bcryptjs.genSalt()
-        const encryptedPassword = await bcryptjs.hash(user.password, salt)
-        if(req.user.role == 'admin'){
-            user.password =encryptedPassword
-            user.adminId = req.user.id
-            await user.save()
-            
-        }else
-        if(req.user.role == 'operator'){
-            user.password = encryptedPassword
-            user.operatorId = req.user.operator
-            await user.save()
-        }
-        return res.status(201).json(user)
-
-    }catch(e){
-        console.log(e)
-        res.status(500).json(e)
-    }
 }
 
 usersCltr.profile = async (req, res) => {
@@ -253,15 +199,32 @@ usersCltr.deleteUser = async (req, res) => {
 }
 
 usersCltr.listAllUsers = async (req, res) => {
-    if (req.user.role === 'admin' || 'operator') {
-        try {
-            const user = await User.find()
-            res.json(user)
-        } catch (e) {
-            res.json(e)
+    try {
+        let users = [];
+
+        if (req.user.role === 'admin') {
+            // If the user is an admin, find all users
+            users = await User.find();
+            res.json(users)
+        } else if (req.user.role === 'operator') {
+   
+            const users = await User.find({ operatorId: req.user.operator});
+
+            res.json(users);
         }
-    } else {
-        res.json({ errors: "you don't have access" })
+        // else if (req.user.role === 'customer'){
+        //     const customer = await User.findOne({_id: req.user.id})
+        //     if(customer){
+        //         res.json(customer)
+        //     }else{
+        //         res.status(400).json({message: 'Customer not found'})
+        //     }
+        // }
+
+       
+    } catch (e) {
+        console.log(e);
+        res.status(500).json(e);
     }
 }
 

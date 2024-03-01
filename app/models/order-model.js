@@ -31,7 +31,7 @@ const orderSchema = new Schema ({
         default: 'pending',
         enum:['pending', "success", "failure"]
     }
-},{timeStamps:true})
+},{timestamps:true})
 
 const Order = model ('Order', orderSchema)
 

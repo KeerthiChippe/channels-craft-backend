@@ -3,6 +3,7 @@ const { validationResult } = require ('express-validator')
 
 const Channel = require ('../models/channel-model')
 const Package = require('../models/package-model')
+const CustomerProfile = require('../models/customerProfile-model')
 
 const channelsCltr={}
 
@@ -21,17 +22,12 @@ channelsCltr.create = async(req,res) =>{
         try{
             const channel =new Channel (body)
             channel.image =req.file.filename
-            // const selectedPackage = await Package.findOne({ packageName: body.selectedPackage });
-            // if (!selectedPackage) {
-            //     return res.status(404).json({ errors: 'Selected package not found' });
-            // }
-            // channel.packages = [selectedPackage]
             
             channel.userId=req.user.id
             await channel.save()
             res.status(201).json(channel)
         }catch(err){
-            console.log(err)
+            // console.log(err)
             res.status(500).json(err)
         }
     }
@@ -43,7 +39,7 @@ channelsCltr.listAllChannels = async (req,res) => {
         const channel = await Channel.find()
         res.json(channel)
     }catch(err){
-        console.log(err)
+        // console.log(err)
         res.status(400).json(err)
     }
 }
@@ -60,7 +56,6 @@ channelsCltr.listOneChannel = async (req,res) =>{
 }
 
 //update channel
-
 channelsCltr.updateChannel = async (req,res) =>{
     const errors= validationResult(req)
     if(!errors.isEmpty()){
@@ -68,22 +63,14 @@ channelsCltr.updateChannel = async (req,res) =>{
     }
     const id= req.params.id
     const body = _.pick(req.body, ['channelPrice'])
-    try{
-        // const updatedOperator = await OperatorProfile.findOneAndUpdate(
-        //     { _id: id},
-        //     { mobile: body.mobile },
-        //     { new: true}
-        // );
-        // const user = await User.findOneAndUpdate(
-        //     {'_id': updatedOperator.userId}, {'mobile': updatedOperator.mobile}, {new: true}
-        // )
-
-        // return res.status(200).json(user)
+    try{  
         const channel = await Channel.findByIdAndUpdate(id,body,{new : true})
-        const package = await Package.findByIdAndUpdate()
+ 
         res.status(200).json(channel)
     }catch(err){
-        console.log(err)
+
+        // console.log(err)
+
         res.status(400).json(err)
     }
 }
@@ -93,12 +80,19 @@ channelsCltr.updateChannel = async (req,res) =>{
 channelsCltr.deleteChannel = async (req, res) =>{
     const id = req.params.id
     try{
-        const channel= await Channel.findByIdAndDelete(id)
+        // Check if any customer is subscribed to this channel
+        const customers = await CustomerProfile.find({"currentChannels.channelId": id });
+        if (customers.length > 0) {
+            return res.status(403).json({ message: "Cannot delete channel as it is subscribed by customers" });
+        }
+        const channel = await Channel.findByIdAndDelete(id)
         res.status(200).json(channel)
     }catch(err){
-        console.log(err)
+        // console.log(err)
         res.status(400).json(err)
     }
 }
+
+
 
 module.exports = channelsCltr
