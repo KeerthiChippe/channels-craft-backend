@@ -1,10 +1,10 @@
-const CustomerProfile = require("../models/customerProfile-model");
-const OperatorProfile = require('../models/operatorProfile-model');
-const Order = require("../models/order-model");
-const Package = require('../models/package-model');
-const Payment = require("../models/payment-model");
+const CustomerProfile = require("../models/customerProfile-model")
+const OperatorProfile = require('../models/operatorProfile-model')
+const Order = require("../models/order-model")
+const Package = require('../models/package-model')
+const Payment = require("../models/payment-model")
 
-const dashboardCltrs = {};
+const dashboardCltrs = {}
 
 dashboardCltrs.getAllUsers = async (req, res) => {
     try {
@@ -26,36 +26,36 @@ dashboardCltrs.getAllUsers = async (req, res) => {
             }
         ]);
 
-        res.json(operatorCustomers);
+        res.json(operatorCustomers)
     } catch (e) {
-        console.log(e);
-        res.status(500).json(e);
+        console.log(e)
+        res.status(500).json(e)
     }
 };
 
 dashboardCltrs.trendingPackages = async (req, res) => {
     try {
       // Fetch all successful payments
-      const successfulPayments = await Payment.find({ status: 'success' });
+      const successfulPayments = await Payment.find({ status: 'success' })
   
       if (!successfulPayments || successfulPayments.length === 0) {
         // Handle case where no successful payments found
-        return res.status(404).json({ message: 'No successful payments found' });
+        return res.status(404).json({ message: 'No successful payments found' })
       }
   
       // Count sold packages
-      const soldPackagesCount = {};
+      const soldPackagesCount = {}
     for (const payment of successfulPayments) {
         // Retrieve the order details using the orderId
-        const order = await Order.findById(payment.orderId);
+        const order = await Order.findById(payment.orderId)
     
         if (order && order.packages) {
             // Output package details if found
             order.packages.forEach((package) => {
                 // console.log('Package:', package.packageId);
                 // console.log('Package Price:', package.packagePrice);
-                soldPackagesCount[package.packageId] = (soldPackagesCount[package.packageId] || 0) + 1;
-            });
+                soldPackagesCount[package.packageId] = (soldPackagesCount[package.packageId] || 0) + 1
+            })
         } else {
             // console.log('No packages found for orderId:', payment.orderId);
         }
@@ -64,11 +64,11 @@ dashboardCltrs.trendingPackages = async (req, res) => {
       // Sort sold packages by count in descending order and get top 5
       const sortedSoldPackages = Object.entries(soldPackagesCount)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
+        .slice(0, 5)
   
       // Fetch package details for the top 5 trending packages
       const trendingPackages = await Promise.all(sortedSoldPackages.map(async ([packageId, soldCount]) => {
-        const package = await Package.findById(packageId);
+        const package = await Package.findById(packageId)
         return { 
             packageName: package.packageName,
             packagePrice: package.packagePrice,
@@ -78,10 +78,10 @@ dashboardCltrs.trendingPackages = async (req, res) => {
       }));
   
       // console.log(trendingPackages, 'trendingPackages')
-      res.json(trendingPackages);
+      res.json(trendingPackages)
     } catch (error) {
-      console.error('Error fetching trending packages:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      console.error('Error fetching trending packages:', error)
+      res.status(500).json({ message: 'Internal server error' })
     }
   }
 

@@ -16,9 +16,9 @@ packagesCltr.create = async (req, res)=>{
         try{
             const package = new Package(body)
             package.image = req.file.filename
-            const selectedChannels = await Channel.findOne({ channelName: body.selectedChannels });
+            const selectedChannels = await Channel.findOne({ channelName: body.selectedChannels })
             if (!selectedChannels){
-                return res.status(404).json({ errors: 'Selected channels not found' });
+                return res.status(404).json({ errors: 'Selected channels not found' })
             }
             package.channels = [selectedChannels]
 
@@ -44,7 +44,7 @@ packagesCltr.listAllPackages = async (req, res)=>{
             }));
             return { ...pkg.toObject(), selectedChannels }
           }));
-          res.json(packagesWithChannels);
+          res.json(packagesWithChannels)
         // res.json(package)
     }catch(e){
         console.log(e)
@@ -80,9 +80,9 @@ packagesCltr.updatePackage = async (req, res) =>{
 packagesCltr.deletePackage = async (req, res) =>{
     const {id, type} = req.query
     try{
-        const customers = await CustomerProfile.find({"currentPackages.packageId": id });
+        const customers = await CustomerProfile.find({"currentPackages.packageId": id })
         if (customers.length > 0) {
-            return res.status(403).json({ message: "Cannot delete package as it is subscribed by customers" });
+            return res.status(403).json({ message: "Cannot delete package as it is subscribed by customers" })
         }
         let package
         if(type === 'delete'){
@@ -92,7 +92,7 @@ packagesCltr.deletePackage = async (req, res) =>{
         }
          
         if (!package) {
-            return res.status(404).json({ error: 'Package not found' });
+            return res.status(404).json({ error: 'Package not found' })
         }
         res.status(200).json(package)
     }catch(e){

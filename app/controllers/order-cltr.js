@@ -19,8 +19,6 @@ ordersCltr.create = async (req, res)=>{
 
         const packagePrice = packages.reduce((sum, package) => sum + package.packagePrice, 0)
         const channelPrice = channels.reduce((sum, channel) => sum + channel.channelPrice, 0)
-        // console.log(packagePrice, typeof packagePrice, "hhhh")
-        // console.log(channelPrice, typeof channelPrice, "kkkk")
         const totalPrice = Number(packagePrice) + Number(channelPrice)
         
         const order = new Order(body) 
@@ -28,9 +26,9 @@ ordersCltr.create = async (req, res)=>{
 
         if(req.user.role === 'operator'){
             order.operatorId = req.user.operator
-            const customerProfile = await CustomerProfile.findOne({ 'operatorId': req.user.operator });
+            const customerProfile = await CustomerProfile.findOne({ 'operatorId': req.user.operator })
         if (customerProfile) {
-            order.customerId = customerProfile.id;
+            order.customerId = customerProfile.id
         }
         }
         if(req.user.role === 'customer'){
@@ -44,7 +42,7 @@ ordersCltr.create = async (req, res)=>{
         await CustomerProfile.findOneAndUpdate(
             {_id: order.customerId}, {$push: {currentPackages: order.packages, currentChannels: order.channels}}, {new: true}
         )
-        console.log(order, 'orderpack')
+        // console.log(order, 'orderpack')
         res.status(201).json(order)
     }catch(e){
         console.log(e)
@@ -97,15 +95,15 @@ ordersCltr.listAllOrders = async (req, res)=>{
 
 ordersCltr.buyAgain = async (req, res)=>{
     try {
-        const orderId = req.params.orderId;
-        const order = await Order.findById(orderId);
+        const orderId = req.params.orderId
+        const order = await Order.findById(orderId)
         if (!order) {
-          return res.status(404).json({ error: 'Order not found' });
+          return res.status(404).json({ error: 'Order not found' })
         }
-        res.json(order);
+        res.json(order)
       } catch (error) {
-        console.error('Error fetching order details:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error fetching order details:', error)
+        res.status(500).json({ error: 'Internal server error' })
       }
 }
 

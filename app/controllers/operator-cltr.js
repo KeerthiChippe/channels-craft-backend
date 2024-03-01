@@ -1,7 +1,6 @@
 const _ = require('lodash')
 const { validationResult } = require('express-validator')
-var nodemailer = require('nodemailer');
-
+var nodemailer = require('nodemailer')
 const OperatorProfile = require('../models/operatorProfile-model')
 const User = require('../models/user-model')
 
@@ -17,7 +16,6 @@ operatorsCltr.create = async (req, res) => {
     // body.role = req.user.role
     try {
         const operator = new OperatorProfile(body)
-        // operator.adminId = req.user.id - if want, for this create admin field in schema and model.
         await operator.save()
 
         // Fetching user details to get the email
@@ -47,9 +45,9 @@ operatorsCltr.create = async (req, res) => {
 
         transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
-                console.log(error);
+                console.log(error)
             } else {
-                console.log('Email sent: ' + info.response);
+                console.log('Email sent: ' + info.response)
                 return res.send({ Status: "success" })
             }
         });
@@ -114,17 +112,16 @@ operatorsCltr.getOperatorByUserId = async (req, res) => {
 
     try {
         // Find the operator based on the provided user ID
-        const operator = await OperatorProfile.findOne({ userId });
+        const operator = await OperatorProfile.findOne({ userId })
 
         if (!operator) {
-            return res.status(404).json({ message: 'Operator not found' });
+            return res.status(404).json({ message: 'Operator not found' })
         }
-        console.log(operator, 'operator')
-        // If operator is found, return the details
-        res.status(200).json(operator);
+        // console.log(operator, 'operator')
+        res.status(200).json(operator)
     } catch (error) {
-        console.error('Error fetching operator details:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Error fetching operator details:', error)
+        res.status(500).json({ message: 'Internal server error' })
     }
 }
 

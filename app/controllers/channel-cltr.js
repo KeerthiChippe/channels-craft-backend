@@ -1,6 +1,5 @@
 const _ = require('lodash')
 const { validationResult } = require ('express-validator')
-
 const Channel = require ('../models/channel-model')
 const Package = require('../models/package-model')
 const CustomerProfile = require('../models/customerProfile-model')
@@ -81,9 +80,9 @@ channelsCltr.deleteChannel = async (req, res) =>{
     const id = req.params.id
     try{
         // Check if any customer is subscribed to this channel
-        const customers = await CustomerProfile.find({"currentChannels.channelId": id });
+        const customers = await CustomerProfile.find({"currentChannels.channelId": id })
         if (customers.length > 0) {
-            return res.status(403).json({ message: "Cannot delete channel as it is subscribed by customers" });
+            return res.status(403).json({ message: "Cannot delete channel as it is subscribed by customers" })
         }
         const channel = await Channel.findByIdAndDelete(id)
         res.status(200).json(channel)
